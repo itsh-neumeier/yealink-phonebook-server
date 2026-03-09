@@ -5,6 +5,8 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Changed
+- Remove ringtone feature from UI, backend and CSV.
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 ### Fixed
