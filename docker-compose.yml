@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  yealink-phonebook:
+    build: .
+    image: ghcr.io/OWNER/yealink-phonebook:latest
+    ports:
+      - "8080:8080"
+      - "2121:2121"
+    environment:
+      SECRET_KEY: "change-me"
+      BASE_HTTP_URL: "http://localhost:8080"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "change-me-now"
+    volumes:
+      - phonebook_data:/data
+
+volumes:
+  phonebook_data:

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h2 class="h4 mb-0">{{ phonebook.name }}</h2>
+    {% if phonebook.description %}<small class="text-muted">{{ phonebook.description }}</small>{% endif %}
+  </div>
+  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">Back</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-4">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Provisioning</h5>
+        <p class="small mb-2"><strong>HTTP URL</strong><br><code>{{ provisioning_url }}</code></p>
+        <p class="small mb-0"><strong>FTP path</strong><br><code>{{ ftp_path }}</code></p>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Yealink XML</h5>
+        <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.xml_export', phonebook_id=phonebook.id) }}">Export XML</a>
+        <form method="post" action="{{ url_for('web.xml_import', phonebook_id=phonebook.id) }}" enctype="multipart/form-data" class="row g-2">
+          <div class="col-12">
+            <input class="form-control" type="file" name="xml_file" accept=".xml,.txt" required />
+          </div>
+          <div class="col-12 form-check ms-1">
+            <input class="form-check-input" type="checkbox" name="replace_existing" id="replace_existing">
+            <label class="form-check-label" for="replace_existing">Replace existing entries</label>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-primary btn-sm" type="submit">Import XML</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">CSV</h5>
+        <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.csv_export', phonebook_id=phonebook.id) }}">Export CSV</a>
+        <form method="post" action="{{ url_for('web.csv_import', phonebook_id=phonebook.id) }}" enctype="multipart/form-data" class="row g-2">
+          <div class="col-12">
+            <input class="form-control" type="file" name="csv_file" accept=".csv" required />
+          </div>
+          <div class="col-12">
+            <button class="btn btn-primary btn-sm" type="submit">Import CSV</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Add Entry</h5>
+        <form method="post" action="{{ url_for('web.add_entry', phonebook_id=phonebook.id) }}" class="row g-2">
+          <div class="col-12"><input class="form-control" name="name" placeholder="Name" required></div>
+          <div class="col-12"><input class="form-control" name="office" placeholder="Office"></div>
+          <div class="col-12"><input class="form-control" name="mobile" placeholder="Mobile"></div>
+          <div class="col-12"><input class="form-control" name="other" placeholder="Other"></div>
+          <div class="col-6"><input class="form-control" name="line" placeholder="Line"></div>
+          <div class="col-6"><input class="form-control" name="ring" placeholder="Ring"></div>
+          <div class="col-12"><input class="form-control" name="group" placeholder="Group"></div>
+          <div class="col-12"><button class="btn btn-primary" type="submit">Add</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Entries</h5>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead>
+              <tr>
+                <th>Name</th><th>Office</th><th>Mobile</th><th>Other</th><th>Group</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for entry in entries %}
+              <tr>
+                <td>{{ entry.name }}</td>
+                <td>{{ entry.office or '' }}</td>
+                <td>{{ entry.mobile or '' }}</td>
+                <td>{{ entry.other or '' }}</td>
+                <td>{{ entry.group or '' }}</td>
+                <td class="text-end">
+                  <form method="post" action="{{ url_for('web.delete_entry', entry_id=entry.id) }}">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="6" class="text-muted">No entries yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

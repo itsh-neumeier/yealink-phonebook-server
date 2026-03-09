@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Create Phonebook</h5>
+        <form method="post" action="{{ url_for('web.create_phonebook') }}" class="row g-3">
+          <div class="col-12">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="name" required />
+          </div>
+          <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-primary" type="submit">Create</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Available Phonebooks</h5>
+        {% if books %}
+          <div class="list-group list-group-flush">
+            {% for book in books %}
+              <a href="{{ url_for('web.view_phonebook', phonebook_id=book.id) }}" class="list-group-item list-group-item-action py-3">
+                <strong>{{ book.name }}</strong>
+                <small class="d-block text-muted">Slug: {{ book.slug }}</small>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="mb-0 text-muted">No phonebooks yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
