@@ -5,6 +5,10 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Changed
+- Auto-update CHANGELOG.
+
+## [0.2.7] - 2026-03-09
+### Changed
 - Update GHCR image name to yeabook.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
