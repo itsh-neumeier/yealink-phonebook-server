@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path
 from urllib.parse import urlparse
 
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from flask import (
     Blueprint,
     Response,
@@ -512,10 +513,15 @@ def phonebook_xml(slug: str):
         items = []
         for dept in departments:
             dept_slug = slugify(dept)
+            token = _issue_submenu_token(
+                credential_id=credential.id,
+                phonebook_id=phonebook.id,
+                department_slug=dept_slug,
+            )
             items.append(
                 (
                     dept,
-                    f"{base}/{phonebook.slug}/departments/{dept_slug}.xml",
+                    f"{base}/{phonebook.slug}/departments/{dept_slug}.xml?token={token}",
                 )
             )
         xml = render_menu_xml(
@@ -537,20 +543,34 @@ def phonebook_xml(slug: str):
 @web.route("/api/phonebooks/<slug>/departments/<dept_slug>.xml")
 @web.route("/<slug>/departments/<dept_slug>.xml")
 def phonebook_department_xml(slug: str, dept_slug: str):
-    credential = _authorized_credential()
-    if not credential:
-        return _basic_auth_challenge()
-
     phonebook = Phonebook.query.filter_by(slug=slug).first()
     if not phonebook:
         abort(404)
 
-    allowed = AccessCredentialPhonebook.query.filter_by(
-        credential_id=credential.id,
-        phonebook_id=phonebook.id,
-    ).first()
-    if not allowed:
-        return Response(translate(g.lang, "forbidden"), 403)
+    credential = _authorized_credential()
+    token_data = _verify_submenu_token(request.args.get("token", ""))
+    access_ok = False
+
+    if credential:
+        allowed = AccessCredentialPhonebook.query.filter_by(
+            credential_id=credential.id,
+            phonebook_id=phonebook.id,
+        ).first()
+        access_ok = bool(allowed)
+
+    if not access_ok and token_data:
+        access_ok = (
+            token_data.get("phonebook_id") == phonebook.id
+            and token_data.get("department_slug") == dept_slug
+            and AccessCredentialPhonebook.query.filter_by(
+                credential_id=token_data.get("credential_id"),
+                phonebook_id=phonebook.id,
+            ).first()
+            is not None
+        )
+
+    if not access_ok:
+        return _basic_auth_challenge()
 
     if not _is_business_phonebook(phonebook):
         return Response(translate(g.lang, "forbidden"), 403)
@@ -630,3 +650,25 @@ def _set_credential_permissions(credential_id: int, phonebook_ids: list[str]) ->
                     phonebook_id=phonebook_id,
                 )
             )
+
+
+def _token_serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="submenu-token")
+
+
+def _issue_submenu_token(credential_id: int, phonebook_id: int, department_slug: str) -> str:
+    payload = {
+        "credential_id": credential_id,
+        "phonebook_id": phonebook_id,
+        "department_slug": department_slug,
+    }
+    return _token_serializer().dumps(payload)
+
+
+def _verify_submenu_token(token: str) -> dict | None:
+    if not token:
+        return None
+    try:
+        return _token_serializer().loads(token, max_age=3600)
+    except (BadSignature, SignatureExpired):
+        return None

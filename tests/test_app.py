@@ -210,3 +210,27 @@ def test_admin_can_manage_access_credentials(client):
     )
     assert create_resp.status_code == 200
     assert b"Access credential created." in create_resp.data
+
+
+def test_business_menu_contains_signed_department_tokens(client):
+    client.post(
+        "/login",
+        data={"username": "admin", "password": "admin123"},
+        follow_redirects=True,
+    )
+    client.post(
+        "/phonebooks",
+        data={"name": "Geschäftliche Kontakte", "category": "business"},
+        follow_redirects=True,
+    )
+    client.post(
+        "/phonebooks/1/entries",
+        data={"name": "Alice", "office": "1001", "group": "ABC"},
+        follow_redirects=True,
+    )
+    grant_default_access_to_phonebook(client, 1)
+
+    menu_resp = client.get("/geschaeftliche-kontakte.xml", headers=auth_headers())
+    assert menu_resp.status_code == 200
+    assert b"YealinkIPPhoneMenu" in menu_resp.data
+    assert b"token=" in menu_resp.data
