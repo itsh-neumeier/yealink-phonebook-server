@@ -6,6 +6,9 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ## [Unreleased]
 ### Changed
 - Auto-update CHANGELOG.
+- Auto-update CHANGELOG.
+### Fixed
+- Reliably show and persist custom ringtone input.
 
 ## [0.2.8] - 2026-03-09
 ### Changed
