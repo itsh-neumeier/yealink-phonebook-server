@@ -11,12 +11,23 @@ CSV_COLUMNS = ["name", "office", "mobile", "other", "line", "ring", "group"]
 
 
 def slugify(value: str) -> str:
-    slug = re.sub(r"[^a-zA-Z0-9]+", "-", value.strip().lower()).strip("-")
+    normalized = (
+        value.strip()
+        .replace("Ä", "Ae")
+        .replace("Ö", "Oe")
+        .replace("Ü", "Ue")
+        .replace("ä", "ae")
+        .replace("ö", "oe")
+        .replace("ü", "ue")
+        .replace("ß", "ss")
+    )
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", normalized.lower()).strip("-")
     return slug or "phonebook"
 
 
 def export_phonebook_xml(phonebook: Phonebook, export_dir: str) -> Path:
     root = ET.Element("YealinkIPPhoneDirectory")
+    is_business = bool(phonebook.settings and phonebook.settings.category == "business")
     title = ET.SubElement(root, "Title")
     title.text = phonebook.name
 
@@ -35,7 +46,7 @@ def export_phonebook_xml(phonebook: Phonebook, export_dir: str) -> Path:
                 telephone_node.text = number
 
         # Some Yealink firmwares accept Group for office-like categorization.
-        if entry.group:
+        if is_business and entry.group:
             group_node = ET.SubElement(item, "Group")
             group_node.text = entry.group
 
@@ -46,7 +57,47 @@ def export_phonebook_xml(phonebook: Phonebook, export_dir: str) -> Path:
     return path
 
 
+def render_directory_xml(title_text: str, prompt_text: str, entries: list[ContactEntry], include_group: bool) -> str:
+    root = ET.Element("YealinkIPPhoneDirectory")
+    title = ET.SubElement(root, "Title")
+    title.text = title_text
+    prompt = ET.SubElement(root, "Prompt")
+    prompt.text = prompt_text
+
+    for entry in entries:
+        item = ET.SubElement(root, "DirectoryEntry")
+        name_node = ET.SubElement(item, "Name")
+        name_node.text = entry.name
+        for number in [entry.office, entry.mobile, entry.other]:
+            if number:
+                telephone_node = ET.SubElement(item, "Telephone")
+                telephone_node.text = number
+        if include_group and entry.group:
+            group_node = ET.SubElement(item, "Group")
+            group_node.text = entry.group
+
+    return ET.tostring(root, encoding="utf-8", xml_declaration=True).decode("utf-8")
+
+
+def render_menu_xml(title_text: str, prompt_text: str, items: list[tuple[str, str]]) -> str:
+    root = ET.Element("YealinkIPPhoneMenu")
+    title = ET.SubElement(root, "Title")
+    title.text = title_text
+    prompt = ET.SubElement(root, "Prompt")
+    prompt.text = prompt_text
+
+    for item_name, item_url in items:
+        menu_item = ET.SubElement(root, "MenuItem")
+        name_node = ET.SubElement(menu_item, "Name")
+        name_node.text = item_name
+        url_node = ET.SubElement(menu_item, "URL")
+        url_node.text = item_url
+
+    return ET.tostring(root, encoding="utf-8", xml_declaration=True).decode("utf-8")
+
+
 def import_phonebook_xml(phonebook: Phonebook, xml_path: Path, replace_existing: bool = False) -> int:
+    is_business = bool(phonebook.settings and phonebook.settings.category == "business")
     try:
         tree = ET.parse(xml_path)
     except ET.ParseError as exc:
@@ -76,6 +127,8 @@ def import_phonebook_xml(phonebook: Phonebook, xml_path: Path, replace_existing:
         mobile = numbers[1] if len(numbers) > 1 else None
         other = numbers[2] if len(numbers) > 2 else None
         group = (item.findtext("Group") or "").strip() or None
+        if not is_business:
+            group = None
 
         db.session.add(
             ContactEntry(
@@ -144,3 +197,5 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
 
     db.session.commit()
     return inserted
+    is_business = bool(phonebook.settings and phonebook.settings.category == "business")
+    is_business = bool(phonebook.settings and phonebook.settings.category == "business")

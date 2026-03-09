@@ -6,7 +6,7 @@
       <div class="row align-items-center g-4">
         <div class="col-md-7">
           <h1 class="display-6 fw-bold mb-2">YeaBook</h1>
-          <p class="mb-3 text-body-secondary">Modern Yealink provisioning with structured contacts, role-based access and multilingual UI.</p>
+          <p class="mb-3 text-body-secondary">{{ tr('hero_subtitle') }}</p>
           <div class="d-flex flex-wrap gap-2">
             <span class="badge text-bg-primary">HTTP XML</span>
             <span class="badge text-bg-success">DE/EN</span>
@@ -55,12 +55,13 @@
         <h5 class="card-title">{{ tr('available_phonebooks') }}</h5>
         {% if books %}
           <div class="list-group list-group-flush">
-            {% for book in books %}
-              <a href="{{ url_for('web.view_phonebook', phonebook_id=book.id) }}" class="list-group-item list-group-item-action py-3 rounded-3 mb-2">
-                <strong>{{ book.name }}</strong>
-                <small class="d-block text-muted">Slug: {{ book.slug }}</small>
+            {% for row in books %}
+              <a href="{{ url_for('web.view_phonebook', phonebook_id=row.book.id) }}" class="list-group-item list-group-item-action py-3 rounded-3 mb-2">
+                <strong>{{ row.book.name }}</strong>
+                <small class="d-block text-muted">Slug: {{ row.book.slug }}</small>
+                <small class="d-block text-muted">{{ tr('entries') }}: {{ row.entry_count }}</small>
                 <small class="d-block text-muted">{{ tr('phonebook_type') }}:
-                  {% if book.settings and book.settings.category == 'business' %}{{ tr('business_phonebook') }}{% else %}{{ tr('private_phonebook') }}{% endif %}
+                  {% if row.book.settings and row.book.settings.category == 'business' %}{{ tr('business_phonebook') }}{% else %}{{ tr('private_phonebook') }}{% endif %}
                 </small>
               </a>
             {% endfor %}

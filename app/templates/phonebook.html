@@ -79,7 +79,9 @@
           <div class="col-12"><input class="form-control" name="other" placeholder="{{ tr('other') }}"></div>
           <div class="col-6"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
           <div class="col-6"><input class="form-control" name="ring" placeholder="{{ tr('ring') }}"></div>
-          <div class="col-12"><input class="form-control" name="group" placeholder="{{ tr('department') if category == 'business' else tr('group') }}"></div>
+          {% if category == 'business' %}
+          <div class="col-12"><input class="form-control" name="group" placeholder="{{ tr('department') }}"></div>
+          {% endif %}
           <div class="col-12"><button class="btn btn-primary" type="submit">{{ tr('add') }}</button></div>
         </form>
       </div>
@@ -98,7 +100,7 @@
                 <th>{{ tr('office') }}</th>
                 <th>{{ tr('mobile') }}</th>
                 <th>{{ tr('other') }}</th>
-                <th>{{ tr('department') if category == 'business' else tr('group') }}</th>
+                {% if category == 'business' %}<th>{{ tr('department') }}</th>{% endif %}
                 <th></th>
               </tr>
             </thead>
@@ -146,7 +148,6 @@
                       <td>{{ entry.office or '' }}</td>
                       <td>{{ entry.mobile or '' }}</td>
                       <td>{{ entry.other or '' }}</td>
-                      <td>{{ entry.group or '' }}</td>
                       <td class="text-end">
                         <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-{{ entry.id }}">{{ tr('edit') }}</button>
                         <form method="post" action="{{ url_for('web.delete_entry', entry_id=entry.id) }}" class="d-inline">
@@ -155,7 +156,7 @@
                       </td>
                     </tr>
                     <tr class="collapse" id="edit-{{ entry.id }}">
-                      <td colspan="6">
+                      <td colspan="5">
                         <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2">
                           <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ entry.name }}" required></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="office" value="{{ entry.office or '' }}" placeholder="{{ tr('office') }}"></div>
@@ -163,7 +164,6 @@
                           <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ring') }}"></div>
-                          <div class="col-md-8"><input class="form-control form-control-sm" name="group" value="{{ entry.group or '' }}" placeholder="{{ tr('group') }}"></div>
                           <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                         </form>
                       </td>

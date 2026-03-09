@@ -20,12 +20,22 @@ from flask import (
 
 from .auth import admin_required, current_user, login_required
 from .i18n import SUPPORTED_LANGUAGES, detect_language, translate
-from .models import AccessCredential, ContactEntry, Phonebook, PhonebookSettings, User, db
+from .models import (
+    AccessCredential,
+    AccessCredentialPhonebook,
+    ContactEntry,
+    Phonebook,
+    PhonebookSettings,
+    User,
+    db,
+)
 from .services import (
     export_phonebook_csv,
     export_phonebook_xml,
     import_phonebook_csv,
     import_phonebook_xml,
+    render_directory_xml,
+    render_menu_xml,
     slugify,
 )
 
@@ -89,7 +99,8 @@ def logout():
 @login_required
 def index():
     books = Phonebook.query.order_by(Phonebook.name.asc()).all()
-    return render_template("index.html", books=books)
+    book_rows = [{"book": book, "entry_count": book.entries.count()} for book in books]
+    return render_template("index.html", books=book_rows)
 
 
 @web.route("/users")
@@ -103,7 +114,16 @@ def users():
 @admin_required
 def access_credentials():
     credentials = AccessCredential.query.order_by(AccessCredential.username.asc()).all()
-    return render_template("access.html", credentials=credentials)
+    phonebooks = Phonebook.query.order_by(Phonebook.name.asc()).all()
+    assigned_map: dict[int, set[int]] = {}
+    for cred in credentials:
+        assigned_map[cred.id] = {p.phonebook_id for p in cred.permissions.all()}
+    return render_template(
+        "access.html",
+        credentials=credentials,
+        phonebooks=phonebooks,
+        assigned_map=assigned_map,
+    )
 
 
 @web.route("/users", methods=["POST"])
@@ -151,6 +171,8 @@ def create_access_credential():
     cred = AccessCredential(username=username, is_active=is_active)
     cred.set_password(password)
     db.session.add(cred)
+    db.session.flush()
+    _set_credential_permissions(cred.id, request.form.getlist("phonebook_ids"))
     db.session.commit()
     flash(translate(g.lang, "access_credential_created"), "success")
     return redirect(url_for("web.access_credentials"))
@@ -173,6 +195,16 @@ def toggle_access_credential(credential_id: int):
     credential.is_active = not credential.is_active
     db.session.commit()
     flash(translate(g.lang, "access_credential_updated"), "success")
+    return redirect(url_for("web.access_credentials"))
+
+
+@web.route("/access/<int:credential_id>/phonebooks", methods=["POST"])
+@admin_required
+def update_access_credential_phonebooks(credential_id: int):
+    credential = AccessCredential.query.get_or_404(credential_id)
+    _set_credential_permissions(credential.id, request.form.getlist("phonebook_ids"))
+    db.session.commit()
+    flash(translate(g.lang, "permissions_updated"), "success")
     return redirect(url_for("web.access_credentials"))
 
 
@@ -299,6 +331,8 @@ def add_entry(phonebook_id: int):
     line = (request.form.get("line") or "").strip() or None
     ring = (request.form.get("ring") or "").strip() or None
     group = (request.form.get("group") or "").strip() or None
+    if not _is_business_phonebook(phonebook):
+        group = None
 
     if not name or not any([office, mobile, other]):
         flash(translate(g.lang, "entry_fields_required"), "danger")
@@ -336,6 +370,8 @@ def edit_entry(entry_id: int):
     line = (request.form.get("line") or "").strip() or None
     ring = (request.form.get("ring") or "").strip() or None
     group = (request.form.get("group") or "").strip() or None
+    if not _is_business_phonebook(phonebook):
+        group = None
 
     if not name or not any([office, mobile, other]):
         flash(translate(g.lang, "entry_fields_required"), "danger")
@@ -449,19 +485,93 @@ def xml_import(phonebook_id: int):
 @web.route("/api/phonebooks/<slug>.xml")
 @web.route("/<slug>.xml")
 def phonebook_xml(slug: str):
-    if not _basic_auth_allowed():
+    credential = _authorized_credential()
+    if not credential:
         return _basic_auth_challenge()
 
     phonebook = Phonebook.query.filter_by(slug=slug).first()
     if not phonebook:
         abort(404)
 
-    path = Path(current_app.config["EXPORT_DIR"]) / f"{phonebook.slug}.xml"
+    allowed = AccessCredentialPhonebook.query.filter_by(
+        credential_id=credential.id,
+        phonebook_id=phonebook.id,
+    ).first()
+    if not allowed:
+        return Response(translate(g.lang, "forbidden"), 403)
 
-    if not path.exists():
-        export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])
+    entries = phonebook.entries.order_by(ContactEntry.name.asc()).all()
+    is_business = _is_business_phonebook(phonebook)
 
-    xml = path.read_text(encoding="utf-8")
+    if is_business:
+        departments = sorted(
+            {(entry.group or "General").strip() or "General" for entry in entries},
+            key=lambda name: name.lower(),
+        )
+        base = current_app.config["BASE_HTTP_URL"].rstrip("/")
+        items = []
+        for dept in departments:
+            dept_slug = slugify(dept)
+            items.append(
+                (
+                    dept,
+                    f"{base}/{phonebook.slug}/departments/{dept_slug}.xml",
+                )
+            )
+        xml = render_menu_xml(
+            title_text=phonebook.name,
+            prompt_text=f"Departments: {phonebook.name}",
+            items=items,
+        )
+        return Response(xml, mimetype="application/xml")
+
+    xml = render_directory_xml(
+        title_text=phonebook.name,
+        prompt_text=f"Directory: {phonebook.name}",
+        entries=entries,
+        include_group=False,
+    )
+    return Response(xml, mimetype="application/xml")
+
+
+@web.route("/api/phonebooks/<slug>/departments/<dept_slug>.xml")
+@web.route("/<slug>/departments/<dept_slug>.xml")
+def phonebook_department_xml(slug: str, dept_slug: str):
+    credential = _authorized_credential()
+    if not credential:
+        return _basic_auth_challenge()
+
+    phonebook = Phonebook.query.filter_by(slug=slug).first()
+    if not phonebook:
+        abort(404)
+
+    allowed = AccessCredentialPhonebook.query.filter_by(
+        credential_id=credential.id,
+        phonebook_id=phonebook.id,
+    ).first()
+    if not allowed:
+        return Response(translate(g.lang, "forbidden"), 403)
+
+    if not _is_business_phonebook(phonebook):
+        return Response(translate(g.lang, "forbidden"), 403)
+
+    entries = phonebook.entries.order_by(ContactEntry.name.asc()).all()
+    departments = {}
+    for entry in entries:
+        dept = (entry.group or "General").strip() or "General"
+        departments[slugify(dept)] = dept
+
+    dept_name = departments.get(dept_slug)
+    if not dept_name:
+        abort(404)
+
+    filtered = [e for e in entries if ((e.group or "General").strip() or "General") == dept_name]
+    xml = render_directory_xml(
+        title_text=f"{phonebook.name} - {dept_name}",
+        prompt_text=f"Department: {dept_name}",
+        entries=filtered,
+        include_group=True,
+    )
     return Response(xml, mimetype="application/xml")
 
 
@@ -470,19 +580,19 @@ def healthz():
     return {"status": "ok", "pid": os.getpid()}
 
 
-def _basic_auth_allowed() -> bool:
+def _authorized_credential() -> AccessCredential | None:
     auth = request.authorization
     if not auth or not auth.username or not auth.password:
-        return False
+        return None
 
     credential = AccessCredential.query.filter_by(
         username=auth.username,
         is_active=True,
     ).first()
     if not credential:
-        return False
+        return None
 
-    return credential.check_password(auth.password)
+    return credential if credential.check_password(auth.password) else None
 
 
 def _basic_auth_challenge():
@@ -499,3 +609,24 @@ def _group_entries(entries: list[ContactEntry]) -> list[tuple[str, list[ContactE
         key = (entry.group or "General").strip() or "General"
         grouped.setdefault(key, []).append(entry)
     return sorted(grouped.items(), key=lambda item: item[0].lower())
+
+
+def _is_business_phonebook(phonebook: Phonebook) -> bool:
+    return bool(phonebook.settings and phonebook.settings.category == "business")
+
+
+def _set_credential_permissions(credential_id: int, phonebook_ids: list[str]) -> None:
+    AccessCredentialPhonebook.query.filter_by(credential_id=credential_id).delete()
+    for raw_id in phonebook_ids:
+        try:
+            phonebook_id = int(raw_id)
+        except ValueError:
+            continue
+        exists = Phonebook.query.get(phonebook_id)
+        if exists:
+            db.session.add(
+                AccessCredentialPhonebook(
+                    credential_id=credential_id,
+                    phonebook_id=phonebook_id,
+                )
+            )

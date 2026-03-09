@@ -9,6 +9,14 @@ def auth_headers(username="apiuser", password="apipass"):
     return {"Authorization": f"Basic {token}"}
 
 
+def grant_default_access_to_phonebook(client, phonebook_id: int):
+    client.post(
+        "/access/1/phonebooks",
+        data={"phonebook_ids": str(phonebook_id)},
+        follow_redirects=True,
+    )
+
+
 def test_webui_requires_login(client):
     response = client.get("/", follow_redirects=False)
     assert response.status_code == 302
@@ -57,6 +65,7 @@ def test_csv_import_export_and_xml(client):
         follow_redirects=True,
     )
     client.post("/phonebooks", data={"name": "Sales"}, follow_redirects=True)
+    grant_default_access_to_phonebook(client, 1)
 
     csv_data = b"name,office,mobile,other,line,ring,group\nAlice,1001,1002,,1,Classic,Sales\n"
     import_resp = client.post(
@@ -178,6 +187,7 @@ def test_phonebook_xml_requires_basic_auth(client):
         follow_redirects=True,
     )
     client.post("/phonebooks", data={"name": "Secure"}, follow_redirects=True)
+    grant_default_access_to_phonebook(client, 1)
 
     unauthorized = client.get("/secure.xml")
     assert unauthorized.status_code == 401
