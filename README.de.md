@@ -1,20 +1,22 @@
-# Yealink Phonebook Server (Deutsch)
+ï»¿# YeaBook (Deutsch)
 
 Dockerisierte Flask-Anwendung mit:
-- WebUI (Bootstrap) zur Verwaltung mehrerer Yealink-Telefonbücher
+- WebUI (Bootstrap) zur Verwaltung mehrerer Yealink-TelefonbÃ¼cher
 - Authentifiziertem WebUI inkl. Admin-Userverwaltung
-- FTP-Usermanagement und Bereitstellung der Telefonbücher per FTP
-- CSV Import/Export`r`n- Yealink XML Import/Export (UI + API)
+- FTP-Usermanagement und Bereitstellung der TelefonbÃ¼cher per FTP
+- CSV Import/Export
+- Yealink XML Import/Export (UI + API)
 - Yealink XML Provisioning Endpoint
 
 ## Sprachversionen
 - Englische Dokumentation: [README.md](README.md)
 
 ## Funktionen
-- Mehrere Telefonbücher mit eindeutigen Slugs
+- Mehrere TelefonbÃ¼cher mit eindeutigen Slugs
 - Kontaktverwaltung (office/mobile/other)
 - Automatische Yealink-XML-Generierung je Telefonbuch
-- CSV Import/Export`r`n- Yealink XML Import/Export (UI + API) für Massenpflege
+- CSV Import/Export
+- Yealink XML Import/Export (UI + API) fÃ¼r Massenpflege
 - Web-Authentifizierung (Session-basiert)
 - Admin-verwaltete Benutzer (Web + FTP)
 - FTP-Server mit Read-only Rechten
@@ -22,14 +24,14 @@ Dockerisierte Flask-Anwendung mit:
 - CI- und GHCR-Release-Pipeline
 
 ## IT-Sicherheit
-- Passwörter werden gehasht gespeichert (Werkzeug)
-- Keine Klartext-Passwörter in der Datenbank
+- PasswÃ¶rter werden gehasht gespeichert (Werkzeug)
+- Keine Klartext-PasswÃ¶rter in der Datenbank
 - WebUI nur nach Login erreichbar
-- User- und FTP-Verwaltung nur für Admins
+- User- und FTP-Verwaltung nur fÃ¼r Admins
 - FTP-Nutzer haben nur Leserechte (`elr`)
-- Container läuft als Nicht-Root-Benutzer
+- Container lÃ¤uft als Nicht-Root-Benutzer
 
-Wichtig: FTP ist standardmäßig unverschlüsselt. Für Produktion nur in geschützten Netzen (z. B. VPN) oder mit zusätzlicher Absicherung (TLS-Termination, Firewall, Segmentierung) einsetzen.
+Wichtig: FTP ist standardmÃ¤ÃŸig unverschlÃ¼sselt. FÃ¼r Produktion nur in geschÃ¼tzten Netzen (z. B. VPN) oder mit zusÃ¤tzlicher Absicherung (TLS-Termination, Firewall, Segmentierung) einsetzen.
 
 ## Schnellstart (Docker)
 ```bash
@@ -44,7 +46,7 @@ WebUI:
 FTP:
 - Host: `localhost`
 - Port: `2121`
-- Zugangsdaten: über WebUI (`Users`)
+- Zugangsdaten: Ã¼ber WebUI (`Users`)
 - Telefonbuchdateien: `/<phonebook-slug>.xml`
 
 ## Yealink Provisioning URLs
@@ -71,7 +73,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m app.main
 ```
 
-### Tests ausführen
+### Tests ausfÃ¼hren
 ```bash
 pytest -q
 ```
@@ -83,7 +85,7 @@ Release-Ablauf:
 1. `CHANGELOG.md` aktualisieren
 2. Tag im Format `vMAJOR.MINOR.PATCH` setzen und pushen
 3. GitHub Action validiert den Tag
-4. Docker-Image wird nach GHCR veröffentlicht:
+4. Docker-Image wird nach GHCR verÃ¶ffentlicht:
    - `ghcr.io/<owner>/<repo>:vMAJOR.MINOR.PATCH`
    - `ghcr.io/<owner>/<repo>:latest`
 
@@ -93,7 +95,7 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-## Öffentliches GitHub-Repo erstellen
+## Ã–ffentliches GitHub-Repo erstellen
 ```bash
 git init
 git add .

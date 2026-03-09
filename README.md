@@ -1,10 +1,11 @@
-# Yealink Phonebook Server
+# YeaBook
 
 Dockerized Flask application providing:
 - WebUI (Bootstrap) for managing multiple Yealink phonebooks
 - Authenticated WebUI with admin user management
 - FTP account management and FTP phonebook delivery
-- CSV import/export`r`n- Yealink XML import/export (UI + API)
+- CSV import/export
+- Yealink XML import/export (UI + API)
 - Yealink XML provisioning endpoint
 
 ## Language Versions
@@ -14,7 +15,8 @@ Dockerized Flask application providing:
 - Multiple phonebooks with unique slug per phonebook
 - Contact management (office/mobile/other phone numbers)
 - Automatic Yealink XML file generation per phonebook
-- CSV import/export`r`n- Yealink XML import/export (UI + API) for bulk operations
+- CSV import/export
+- Yealink XML import/export (UI + API) for bulk operations
 - Web authentication (session-based)
 - Admin-managed users (Web + FTP credentials)
 - FTP server with read-only permissions

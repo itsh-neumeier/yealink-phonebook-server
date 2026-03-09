@@ -1,8 +1,8 @@
 version: "3.9"
 services:
-  yealink-phonebook:
+  yeabook:
     build: .
-    image: ghcr.io/OWNER/yealink-phonebook:latest
+    image: ghcr.io/OWNER/yeabook:latest
     ports:
       - "8080:8080"
       - "2121:2121"
