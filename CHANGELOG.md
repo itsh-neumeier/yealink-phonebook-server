@@ -10,6 +10,10 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ### Fixed
 - Support bind mounts via PUID/PGID entrypoint.
 
+## [0.2.10] - 2026-03-09
+### Fixed
+- Improve bind-mount support using PUID/PGID container startup mapping and clear permission error output.
+
 ## [0.2.9] - 2026-03-09
 ### Changed
 - Remove ringtone feature from UI, backend and CSV.
