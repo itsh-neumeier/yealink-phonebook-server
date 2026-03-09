@@ -2,12 +2,14 @@
   --app-bg: radial-gradient(circle at 15% 10%, #e7f1ff 0, #f5f7fb 40%, #eef5f1 100%);
   --panel-bg: rgba(255, 255, 255, 0.75);
   --panel-border: rgba(13, 110, 253, 0.15);
+  --group-row-bg: color-mix(in oklab, var(--bs-body-bg) 88%, var(--bs-primary) 12%);
 }
 
 [data-bs-theme="dark"] {
   --app-bg: radial-gradient(circle at 15% 10%, #102338 0, #0f1216 45%, #13221f 100%);
   --panel-bg: rgba(25, 29, 34, 0.75);
   --panel-border: rgba(32, 201, 151, 0.25);
+  --group-row-bg: color-mix(in oklab, var(--bs-body-bg) 78%, #4cc9a6 22%);
 }
 
 body {
@@ -48,4 +50,8 @@ body {
 
 code {
   word-break: break-all;
+}
+
+.group-row > td {
+  background: var(--group-row-bg);
 }

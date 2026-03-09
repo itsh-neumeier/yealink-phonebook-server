@@ -59,11 +59,11 @@ def inject_i18n():
     }
 
 
-@web.route("/language/<lang_code>", methods=["POST"])
+@web.route("/language/<lang_code>", methods=["GET", "POST"])
 def set_language(lang_code: str):
     if lang_code in SUPPORTED_LANGUAGES:
         session["lang"] = lang_code
-    next_url = request.form.get("next") or url_for("web.index")
+    next_url = request.values.get("next") or url_for("web.index")
     parsed = urlparse(next_url)
     if parsed.netloc or parsed.scheme:
         next_url = url_for("web.index")

@@ -108,7 +108,7 @@
               {% if entries %}
                 {% if category == 'business' %}
                   {% for department, dep_entries in grouped_entries %}
-                    <tr class="table-light">
+                    <tr class="group-row">
                       <td colspan="6"><strong>{{ department }}</strong></td>
                     </tr>
                     {% for entry in dep_entries %}
