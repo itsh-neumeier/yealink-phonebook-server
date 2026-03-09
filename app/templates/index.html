@@ -1,8 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row g-4">
+<div class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <section class="hero-panel p-4 p-lg-5">
+      <div class="row align-items-center g-4">
+        <div class="col-md-7">
+          <h1 class="display-6 fw-bold mb-2">YeaBook</h1>
+          <p class="mb-3 text-body-secondary">Modern Yealink provisioning with structured contacts, role-based access and multilingual UI.</p>
+          <div class="d-flex flex-wrap gap-2">
+            <span class="badge text-bg-primary">HTTP XML</span>
+            <span class="badge text-bg-success">DE/EN</span>
+            <span class="badge text-bg-dark">Light/Dark</span>
+          </div>
+        </div>
+        <div class="col-md-5 text-center">
+          <img src="{{ url_for('static', filename='hero.svg') }}" alt="YeaBook Illustration" class="hero-img" />
+        </div>
+      </div>
+    </section>
+  </div>
   <div class="col-lg-5">
-    <div class="card shadow-sm">
+    <div class="card shadow-sm h-100">
       <div class="card-body">
         <h5 class="card-title">{{ tr('create_phonebook') }}</h5>
         <form method="post" action="{{ url_for('web.create_phonebook') }}" class="row g-3">
@@ -15,23 +33,35 @@
             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
           </div>
           <div class="col-12">
+            <label for="category" class="form-label">{{ tr('phonebook_type') }}</label>
+            <select class="form-select" id="category" name="category">
+              <option value="private">{{ tr('private_phonebook') }}</option>
+              <option value="business">{{ tr('business_phonebook') }}</option>
+            </select>
+          </div>
+          <div class="col-12">
             <button class="btn btn-primary" type="submit">{{ tr('create') }}</button>
           </div>
         </form>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="col-lg-7">
+<div class="row g-4">
+  <div class="col-12">
     <div class="card shadow-sm">
       <div class="card-body">
         <h5 class="card-title">{{ tr('available_phonebooks') }}</h5>
         {% if books %}
           <div class="list-group list-group-flush">
             {% for book in books %}
-              <a href="{{ url_for('web.view_phonebook', phonebook_id=book.id) }}" class="list-group-item list-group-item-action py-3">
+              <a href="{{ url_for('web.view_phonebook', phonebook_id=book.id) }}" class="list-group-item list-group-item-action py-3 rounded-3 mb-2">
                 <strong>{{ book.name }}</strong>
                 <small class="d-block text-muted">Slug: {{ book.slug }}</small>
+                <small class="d-block text-muted">{{ tr('phonebook_type') }}:
+                  {% if book.settings and book.settings.category == 'business' %}{{ tr('business_phonebook') }}{% else %}{{ tr('private_phonebook') }}{% endif %}
+                </small>
               </a>
             {% endfor %}
           </div>

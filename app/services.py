@@ -34,6 +34,11 @@ def export_phonebook_xml(phonebook: Phonebook, export_dir: str) -> Path:
                 telephone_node = ET.SubElement(item, "Telephone")
                 telephone_node.text = number
 
+        # Some Yealink firmwares accept Group for office-like categorization.
+        if entry.group:
+            group_node = ET.SubElement(item, "Group")
+            group_node.text = entry.group
+
     os.makedirs(export_dir, exist_ok=True)
     path = Path(export_dir) / f"{phonebook.slug}.xml"
     tree = ET.ElementTree(root)
@@ -70,6 +75,7 @@ def import_phonebook_xml(phonebook: Phonebook, xml_path: Path, replace_existing:
         office = numbers[0] if len(numbers) > 0 else None
         mobile = numbers[1] if len(numbers) > 1 else None
         other = numbers[2] if len(numbers) > 2 else None
+        group = (item.findtext("Group") or "").strip() or None
 
         db.session.add(
             ContactEntry(
@@ -78,6 +84,7 @@ def import_phonebook_xml(phonebook: Phonebook, xml_path: Path, replace_existing:
                 office=office,
                 mobile=mobile,
                 other=other,
+                group=group,
             )
         )
         inserted += 1

@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5 col-lg-4">
+<div class="row g-4 justify-content-center align-items-center">
+  <div class="col-lg-5 d-none d-lg-block">
+    <section class="hero-panel p-4">
+      <img src="{{ url_for('static', filename='hero.svg') }}" alt="YeaBook Illustration" class="hero-img mb-3" />
+      <h2 class="h4">YeaBook</h2>
+      <p class="mb-0 text-body-secondary">Provisioning, access control and multilingual contact management for Yealink environments.</p>
+    </section>
+  </div>
+  <div class="col-md-7 col-lg-4">
     <div class="card shadow-sm">
       <div class="card-body p-4">
         <h1 class="h5 mb-3">{{ tr('sign_in') }}</h1>

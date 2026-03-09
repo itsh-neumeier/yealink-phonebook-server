@@ -20,7 +20,7 @@ from flask import (
 
 from .auth import admin_required, current_user, login_required
 from .i18n import SUPPORTED_LANGUAGES, detect_language, translate
-from .models import AccessCredential, ContactEntry, Phonebook, User, db
+from .models import AccessCredential, ContactEntry, Phonebook, PhonebookSettings, User, db
 from .services import (
     export_phonebook_csv,
     export_phonebook_xml,
@@ -197,6 +197,9 @@ def delete_user(user_id: int):
 def create_phonebook():
     name = (request.form.get("name") or "").strip()
     description = (request.form.get("description") or "").strip() or None
+    category = (request.form.get("category") or "private").strip().lower()
+    if category not in {"private", "business"}:
+        category = "private"
 
     if not name:
         flash(translate(g.lang, "phonebook_name_required"), "danger")
@@ -211,6 +214,8 @@ def create_phonebook():
 
     phonebook = Phonebook(name=name, slug=slug, description=description)
     db.session.add(phonebook)
+    db.session.flush()
+    db.session.add(PhonebookSettings(phonebook_id=phonebook.id, category=category))
     db.session.commit()
 
     export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])
@@ -224,6 +229,9 @@ def edit_phonebook(phonebook_id: int):
     phonebook = Phonebook.query.get_or_404(phonebook_id)
     name = (request.form.get("name") or "").strip()
     description = (request.form.get("description") or "").strip() or None
+    category = (request.form.get("category") or "private").strip().lower()
+    if category not in {"private", "business"}:
+        category = "private"
 
     if not name:
         flash(translate(g.lang, "phonebook_name_required"), "danger")
@@ -239,6 +247,10 @@ def edit_phonebook(phonebook_id: int):
 
     phonebook.name = name
     phonebook.description = description
+    if phonebook.settings:
+        phonebook.settings.category = category
+    else:
+        db.session.add(PhonebookSettings(phonebook_id=phonebook.id, category=category))
     db.session.commit()
     export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])
     flash(translate(g.lang, "phonebook_updated"), "success")
@@ -250,6 +262,11 @@ def edit_phonebook(phonebook_id: int):
 def view_phonebook(phonebook_id: int):
     phonebook = Phonebook.query.get_or_404(phonebook_id)
     entries = phonebook.entries.order_by(ContactEntry.name.asc()).all()
+    category = (
+        phonebook.settings.category
+        if phonebook.settings and phonebook.settings.category in {"private", "business"}
+        else "private"
+    )
 
     provisioning_url = f"{current_app.config['BASE_HTTP_URL'].rstrip('/')}/{phonebook.slug}.xml"
     provisioning_url_with_auth = provisioning_url
@@ -263,6 +280,8 @@ def view_phonebook(phonebook_id: int):
         "phonebook.html",
         phonebook=phonebook,
         entries=entries,
+        category=category,
+        grouped_entries=_group_entries(entries) if category == "business" else [],
         provisioning_url=provisioning_url,
         provisioning_url_with_auth=provisioning_url_with_auth,
     )
@@ -472,3 +491,11 @@ def _basic_auth_challenge():
         401,
         {"WWW-Authenticate": 'Basic realm="YeaBook Phonebook"'},
     )
+
+
+def _group_entries(entries: list[ContactEntry]) -> list[tuple[str, list[ContactEntry]]]:
+    grouped: dict[str, list[ContactEntry]] = {}
+    for entry in entries:
+        key = (entry.group or "General").strip() or "General"
+        grouped.setdefault(key, []).append(entry)
+    return sorted(grouped.items(), key=lambda item: item[0].lower())

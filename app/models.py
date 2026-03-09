@@ -28,6 +28,25 @@ class Phonebook(db.Model):
         cascade="all, delete-orphan",
         lazy="dynamic",
     )
+    settings = db.relationship(
+        "PhonebookSettings",
+        backref="phonebook",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
+
+
+class PhonebookSettings(db.Model):
+    __tablename__ = "phonebook_settings"
+
+    id = db.Column(db.Integer, primary_key=True)
+    phonebook_id = db.Column(
+        db.Integer,
+        db.ForeignKey("phonebooks.id"),
+        nullable=False,
+        unique=True,
+    )
+    category = db.Column(db.String(20), nullable=False, default="private")
 
 
 class ContactEntry(db.Model):
