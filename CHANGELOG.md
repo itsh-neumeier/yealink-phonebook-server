@@ -6,6 +6,9 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ## [Unreleased]
 ### Changed
 - Auto-update CHANGELOG.
+- Auto-update CHANGELOG.
+### Fixed
+- Support bind mounts via PUID/PGID entrypoint.
 
 ## [0.2.9] - 2026-03-09
 ### Changed
@@ -15,7 +18,6 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 - Auto-update CHANGELOG.
 ### Fixed
 - Reliably show and persist custom ringtone input.
-- Improve bind-mount support using PUID/PGID container startup mapping and clear permission error output.
 
 ## [0.2.8] - 2026-03-09
 ### Changed
