@@ -4,7 +4,10 @@ All notable changes to this project are documented in this file.
 The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
+### Added
+- Auto-migrate persistent volume schema on startup.
 ### Changed
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 
 ## [0.2.5] - 2026-03-09
