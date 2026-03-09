@@ -75,7 +75,7 @@ Weitere Zugangsdaten werden in der Access-Liste im Header verwaltet.
 
 ## CSV-Format
 ```csv
-name,office,mobile,other,line,ring,group
+name,office,mobile,other,line,group
 ```
 Regeln:
 - `name` ist Pflicht

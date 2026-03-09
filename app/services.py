@@ -7,7 +7,7 @@ from pathlib import Path
 from .models import ContactEntry, Phonebook, db
 
 
-CSV_COLUMNS = ["name", "office", "mobile", "other", "line", "ring", "group"]
+CSV_COLUMNS = ["name", "office", "mobile", "other", "line", "group"]
 
 
 def slugify(value: str) -> str:
@@ -156,7 +156,6 @@ def export_phonebook_csv(phonebook: Phonebook, export_path: Path) -> Path:
                     "mobile": entry.mobile or "",
                     "other": entry.other or "",
                     "line": entry.line or "",
-                    "ring": entry.ring or "",
                     "group": entry.group or "",
                 }
             )
@@ -173,7 +172,6 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
             mobile = (row.get("mobile") or "").strip() or None
             other = (row.get("other") or "").strip() or None
             line = (row.get("line") or "").strip() or None
-            ring = (row.get("ring") or "").strip() or None
             group = (row.get("group") or "").strip() or None
 
             if not name or not any([office, mobile, other]):
@@ -187,7 +185,6 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
                     mobile=mobile,
                     other=other,
                     line=line,
-                    ring=ring,
                     group=group,
                 )
             )

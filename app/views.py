@@ -369,7 +369,6 @@ def add_entry(phonebook_id: int):
     mobile = (request.form.get("mobile") or "").strip() or None
     other = (request.form.get("other") or "").strip() or None
     line = (request.form.get("line") or "").strip() or None
-    ring = _extract_ring_value(request.form)
     group = (request.form.get("group") or "").strip() or None
     if not _is_business_phonebook(phonebook):
         group = None
@@ -386,7 +385,6 @@ def add_entry(phonebook_id: int):
             mobile=mobile,
             other=other,
             line=line,
-            ring=ring,
             group=group,
         )
     )
@@ -408,7 +406,6 @@ def edit_entry(entry_id: int):
     mobile = (request.form.get("mobile") or "").strip() or None
     other = (request.form.get("other") or "").strip() or None
     line = (request.form.get("line") or "").strip() or None
-    ring = _extract_ring_value(request.form)
     group = (request.form.get("group") or "").strip() or None
     if not _is_business_phonebook(phonebook):
         group = None
@@ -422,7 +419,6 @@ def edit_entry(entry_id: int):
     entry.mobile = mobile
     entry.other = other
     entry.line = line
-    entry.ring = ring
     entry.group = group
     db.session.commit()
     export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])
@@ -689,14 +685,6 @@ def _set_credential_permissions(credential_id: int, phonebook_ids: list[str]) ->
                     phonebook_id=phonebook_id,
                 )
             )
-
-
-def _extract_ring_value(form_data) -> str | None:
-    selected = (form_data.get("ring_select") or "").strip()
-    custom = (form_data.get("ring_custom") or "").strip()
-    if selected == "__custom__":
-        return custom or None
-    return selected or None
 
 
 def _token_serializer() -> URLSafeTimedSerializer:

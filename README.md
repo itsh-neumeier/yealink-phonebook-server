@@ -75,7 +75,7 @@ Additional credentials are managed in the Access List admin page in the header.
 
 ## CSV Format
 ```csv
-name,office,mobile,other,line,ring,group
+name,office,mobile,other,line,group
 ```
 Rules:
 - `name` required

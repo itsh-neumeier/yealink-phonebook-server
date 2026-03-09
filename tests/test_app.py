@@ -79,7 +79,7 @@ def test_csv_import_export_and_xml(client):
     client.post("/phonebooks", data={"name": "Sales"}, follow_redirects=True)
     grant_default_access_to_phonebook(client, 1)
 
-    csv_data = b"name,office,mobile,other,line,ring,group\nAlice,1001,1002,,1,Classic,Sales\n"
+    csv_data = b"name,office,mobile,other,line,group\nAlice,1001,1002,,1,Sales\n"
     import_resp = client.post(
         "/phonebooks/1/csv/import",
         data={"csv_file": (BytesIO(csv_data), "contacts.csv")},

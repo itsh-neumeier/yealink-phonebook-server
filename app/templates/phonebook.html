@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-{% set ring_presets = ["Ring1.wav", "Ring2.wav", "Ring3.wav", "Ring4.wav", "Ring5.wav", "Ring6.wav", "Ring7.wav", "Ring8.wav", "Silent.wav", "Splash.wav"] %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <div>
     <h2 class="h4 mb-0">{{ phonebook.name }}</h2>
@@ -44,16 +43,12 @@
         <h5 class="card-title">{{ tr('yealink_xml') }}</h5>
         <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.xml_export', phonebook_id=phonebook.id) }}">{{ tr('export_xml') }}</a>
         <form method="post" action="{{ url_for('web.xml_import', phonebook_id=phonebook.id) }}" enctype="multipart/form-data" class="row g-2">
-          <div class="col-12">
-            <input class="form-control" type="file" name="xml_file" accept=".xml,.txt" required />
-          </div>
+          <div class="col-12"><input class="form-control" type="file" name="xml_file" accept=".xml,.txt" required /></div>
           <div class="col-12 form-check ms-1">
             <input class="form-check-input" type="checkbox" name="replace_existing" id="replace_existing">
             <label class="form-check-label" for="replace_existing">{{ tr('replace_existing_entries') }}</label>
           </div>
-          <div class="col-12">
-            <button class="btn btn-primary btn-sm" type="submit">{{ tr('import_xml') }}</button>
-          </div>
+          <div class="col-12"><button class="btn btn-primary btn-sm" type="submit">{{ tr('import_xml') }}</button></div>
         </form>
       </div>
     </div>
@@ -63,12 +58,8 @@
         <h5 class="card-title">{{ tr('csv') }}</h5>
         <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.csv_export', phonebook_id=phonebook.id) }}">{{ tr('export_csv') }}</a>
         <form method="post" action="{{ url_for('web.csv_import', phonebook_id=phonebook.id) }}" enctype="multipart/form-data" class="row g-2">
-          <div class="col-12">
-            <input class="form-control" type="file" name="csv_file" accept=".csv" required />
-          </div>
-          <div class="col-12">
-            <button class="btn btn-primary btn-sm" type="submit">{{ tr('import_csv') }}</button>
-          </div>
+          <div class="col-12"><input class="form-control" type="file" name="csv_file" accept=".csv" required /></div>
+          <div class="col-12"><button class="btn btn-primary btn-sm" type="submit">{{ tr('import_csv') }}</button></div>
         </form>
       </div>
     </div>
@@ -76,25 +67,12 @@
     <div class="card shadow-sm">
       <div class="card-body">
         <h5 class="card-title">{{ tr('add_entry') }}</h5>
-        <form method="post" action="{{ url_for('web.add_entry', phonebook_id=phonebook.id) }}" class="row g-2" data-ring-form>
+        <form method="post" action="{{ url_for('web.add_entry', phonebook_id=phonebook.id) }}" class="row g-2">
           <div class="col-12"><input class="form-control" name="name" placeholder="{{ tr('name') }}" required></div>
           <div class="col-12"><input class="form-control" name="office" placeholder="{{ tr('office') }}"></div>
           <div class="col-12"><input class="form-control" name="mobile" placeholder="{{ tr('mobile') }}"></div>
           <div class="col-12"><input class="form-control" name="other" placeholder="{{ tr('other') }}"></div>
-          <div class="col-6"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
-          <div class="col-6">
-            <select class="form-select" data-ring-select name="ring_select" onchange="const wrap=this.form.querySelector('[data-ring-custom-wrap]'); const input=this.form.querySelector('[data-ring-custom]'); const isCustom=this.value==='__custom__'; if (wrap) wrap.classList.toggle('d-none', !isCustom); if (input) input.disabled=!isCustom;">
-              <option value="">{{ tr('ring_none') }}</option>
-              {% for preset in ring_presets %}
-              <option value="{{ preset }}">{{ preset }}</option>
-              {% endfor %}
-              <option value="__custom__">{{ tr('ring_custom') }}</option>
-            </select>
-          </div>
-          <div class="col-12 d-none" data-ring-custom-wrap>
-            <input class="form-control" type="text" data-ring-custom name="ring_custom" placeholder="{{ tr('ring_custom_placeholder') }}" disabled>
-            <div class="form-text">{{ tr('ring_custom_help') }}</div>
-          </div>
+          <div class="col-12"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
           {% if category == 'business' %}
           <div class="col-12"><input class="form-control" name="group" placeholder="{{ tr('department') }}"></div>
           {% endif %}
@@ -124,9 +102,7 @@
               {% if entries %}
                 {% if category == 'business' %}
                   {% for department, dep_entries in grouped_entries %}
-                    <tr class="group-row">
-                      <td colspan="6"><strong>{{ department }}</strong></td>
-                    </tr>
+                    <tr class="group-row"><td colspan="6"><strong>{{ department }}</strong></td></tr>
                     {% for entry in dep_entries %}
                       <tr>
                         <td>{{ entry.name }}</td>
@@ -143,26 +119,12 @@
                       </tr>
                       <tr class="collapse" id="edit-{{ entry.id }}">
                         <td colspan="6">
-                          {% set entry_is_custom = entry.ring and entry.ring not in ring_presets %}
-                          <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2" data-ring-form>
+                          <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2">
                             <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ entry.name }}" required></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="office" value="{{ entry.office or '' }}" placeholder="{{ tr('office') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
-                            <div class="col-md-4">
-                              <select class="form-select form-select-sm" data-ring-select name="ring_select" onchange="const wrap=this.form.querySelector('[data-ring-custom-wrap]'); const input=this.form.querySelector('[data-ring-custom]'); const isCustom=this.value==='__custom__'; if (wrap) wrap.classList.toggle('d-none', !isCustom); if (input) input.disabled=!isCustom;">
-                                <option value="">{{ tr('ring_none') }}</option>
-                                {% for preset in ring_presets %}
-                                <option value="{{ preset }}" {% if entry.ring == preset %}selected{% endif %}>{{ preset }}</option>
-                                {% endfor %}
-                                <option value="__custom__" {% if entry_is_custom %}selected{% endif %}>{{ tr('ring_custom') }}</option>
-                              </select>
-                            </div>
-                            <div class="col-md-12 {% if not entry_is_custom %}d-none{% endif %}" data-ring-custom-wrap>
-                              <input class="form-control form-control-sm" type="text" data-ring-custom name="ring_custom" value="{{ entry.ring if entry_is_custom else '' }}" placeholder="{{ tr('ring_custom_placeholder') }}" {% if not entry_is_custom %}disabled{% endif %}>
-                              <div class="form-text">{{ tr('ring_custom_help') }}</div>
-                            </div>
                             <div class="col-md-8"><input class="form-control form-control-sm" name="group" value="{{ entry.group or '' }}" placeholder="{{ tr('department') }}"></div>
                             <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                           </form>
@@ -186,26 +148,12 @@
                     </tr>
                     <tr class="collapse" id="edit-{{ entry.id }}">
                       <td colspan="5">
-                        {% set entry_is_custom = entry.ring and entry.ring not in ring_presets %}
-                        <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2" data-ring-form>
+                        <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2">
                           <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ entry.name }}" required></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="office" value="{{ entry.office or '' }}" placeholder="{{ tr('office') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
-                          <div class="col-md-4">
-                            <select class="form-select form-select-sm" data-ring-select name="ring_select" onchange="const wrap=this.form.querySelector('[data-ring-custom-wrap]'); const input=this.form.querySelector('[data-ring-custom]'); const isCustom=this.value==='__custom__'; if (wrap) wrap.classList.toggle('d-none', !isCustom); if (input) input.disabled=!isCustom;">
-                              <option value="">{{ tr('ring_none') }}</option>
-                              {% for preset in ring_presets %}
-                              <option value="{{ preset }}" {% if entry.ring == preset %}selected{% endif %}>{{ preset }}</option>
-                              {% endfor %}
-                              <option value="__custom__" {% if entry_is_custom %}selected{% endif %}>{{ tr('ring_custom') }}</option>
-                            </select>
-                          </div>
-                          <div class="col-md-12 {% if not entry_is_custom %}d-none{% endif %}" data-ring-custom-wrap>
-                            <input class="form-control form-control-sm" type="text" data-ring-custom name="ring_custom" value="{{ entry.ring if entry_is_custom else '' }}" placeholder="{{ tr('ring_custom_placeholder') }}" {% if not entry_is_custom %}disabled{% endif %}>
-                            <div class="form-text">{{ tr('ring_custom_help') }}</div>
-                          </div>
                           <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                         </form>
                       </td>
@@ -241,4 +189,5 @@
       </div>
     </div>
   </div>
+</div>
 {% endblock %}
