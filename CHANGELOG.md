@@ -5,14 +5,16 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Changed
+- No unreleased changes yet.
+
+## [0.2.10] - 2026-03-09
+### Changed
+- Prepare v0.2.10 changelog.
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 ### Fixed
 - Support bind mounts via PUID/PGID entrypoint.
-
-## [0.2.10] - 2026-03-09
-### Fixed
-- Improve bind-mount support using PUID/PGID container startup mapping and clear permission error output.
 
 ## [0.2.9] - 2026-03-09
 ### Changed
