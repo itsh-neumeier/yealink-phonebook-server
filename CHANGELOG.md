@@ -5,6 +5,8 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Changed
+- Remove contact photo feature from app and docs.
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 
 ## [0.2.7] - 2026-03-09
