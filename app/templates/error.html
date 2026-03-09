@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <section class="card shadow-sm">
+      <div class="card-body p-4 p-lg-5 text-center">
+        <div class="display-5 fw-bold text-primary mb-2">{{ status_code }}</div>
+        <h1 class="h3 mb-3">{{ error_title }}</h1>
+        <p class="text-body-secondary mb-4">{{ error_message }}</p>
+        <a class="btn btn-primary" href="{{ url_for('web.index') }}">{{ tr('back_to_home') }}</a>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

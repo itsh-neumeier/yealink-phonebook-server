@@ -18,6 +18,7 @@ from flask import (
     session,
     url_for,
 )
+from werkzeug.exceptions import HTTPException
 
 from .auth import admin_required, current_user, login_required
 from .i18n import SUPPORTED_LANGUAGES, detect_language, translate
@@ -57,6 +58,29 @@ def inject_i18n():
         "lang": g.lang,
         "supported_languages": SUPPORTED_LANGUAGES,
     }
+
+
+@web.app_errorhandler(404)
+def handle_not_found(error):
+    return _render_error_page(404)
+
+
+@web.app_errorhandler(403)
+def handle_forbidden(error):
+    return _render_error_page(403)
+
+
+@web.app_errorhandler(500)
+def handle_server_error(error):
+    return _render_error_page(500)
+
+
+@web.app_errorhandler(Exception)
+def handle_unexpected_error(error):
+    if isinstance(error, HTTPException):
+        return _render_error_page(error.code or 500)
+    current_app.logger.exception("Unhandled application error", exc_info=error)
+    return _render_error_page(500)
 
 
 @web.route("/language/<lang_code>", methods=["GET", "POST"])
@@ -672,3 +696,45 @@ def _verify_submenu_token(token: str) -> dict | None:
         return _token_serializer().loads(token, max_age=3600)
     except (BadSignature, SignatureExpired):
         return None
+
+
+def _render_error_page(status_code: int):
+    if _prefer_plain_error_response():
+        text_map = {
+            403: "Forbidden",
+            404: "Not Found",
+            500: "Internal Server Error",
+        }
+        return Response(text_map.get(status_code, "Error"), status_code, mimetype="text/plain")
+
+    title_map = {
+        403: "error_403_title",
+        404: "error_404_title",
+        500: "error_500_title",
+    }
+    message_map = {
+        403: "error_403_message",
+        404: "error_404_message",
+        500: "error_500_message",
+    }
+
+    title_key = title_map.get(status_code, "error_page_title")
+    message_key = message_map.get(status_code, "error_default_message")
+
+    return (
+        render_template(
+            "error.html",
+            status_code=status_code,
+            error_title=translate(g.lang, title_key),
+            error_message=translate(g.lang, message_key),
+        ),
+        status_code,
+    )
+
+
+def _prefer_plain_error_response() -> bool:
+    path = (request.path or "").lower()
+    if path.endswith(".xml"):
+        return True
+    best = request.accept_mimetypes.best
+    return best in {"application/xml", "text/xml", "application/json"}

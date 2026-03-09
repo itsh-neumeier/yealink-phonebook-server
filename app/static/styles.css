@@ -18,8 +18,14 @@ body {
 }
 
 .app-nav {
+  position: relative;
+  z-index: 1040;
   backdrop-filter: blur(8px);
   background: color-mix(in oklab, var(--bs-body-bg) 85%, var(--bs-primary) 15%);
+}
+
+.app-nav .dropdown-menu {
+  z-index: 1080;
 }
 
 .card {

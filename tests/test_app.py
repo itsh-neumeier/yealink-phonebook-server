@@ -23,6 +23,13 @@ def test_webui_requires_login(client):
     assert "/login" in response.headers["Location"]
 
 
+def test_not_found_page_contains_home_link(client):
+    response = client.get("/this-page-does-not-exist", follow_redirects=False)
+    assert response.status_code == 404
+    assert b"Page not found" in response.data
+    assert b'href="/"' in response.data
+
+
 def test_admin_login_and_create_phonebook(client):
     login_response = client.post(
         "/login",
