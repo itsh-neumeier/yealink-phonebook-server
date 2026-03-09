@@ -51,8 +51,13 @@ FTP:
 
 ## Yealink Provisioning URLs
 Pro Telefonbuch:
-- HTTP: `http://<host>:8080/api/phonebooks/<slug>.xml`
+- HTTP: `http://<host>:8080/<slug>.xml`
+- HTTP (mit Auth in URL): `http://<user>:<password>@<host>:8080/<slug>.xml`
 - FTP: `ftp://<ftp-user>:<ftp-pass>@<host>:2121/<slug>.xml`
+
+Optionale Env-Variablen für die Anzeige des Auth-Links in der UI:
+- `PROVISION_USERNAME`
+- `PROVISION_PASSWORD`
 
 ## CSV-Format
 Header:

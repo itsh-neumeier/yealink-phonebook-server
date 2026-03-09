@@ -9,6 +9,8 @@ services:
     environment:
       SECRET_KEY: "change-me"
       BASE_HTTP_URL: "http://localhost:8080"
+      PROVISION_USERNAME: ""
+      PROVISION_PASSWORD: ""
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "change-me-now"
     volumes:

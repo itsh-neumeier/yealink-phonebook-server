@@ -168,7 +168,14 @@ def view_phonebook(phonebook_id: int):
     entries = phonebook.entries.order_by(ContactEntry.name.asc()).all()
 
     ftp_path = f"/{phonebook.slug}.xml"
-    provisioning_url = f"{current_app.config['BASE_HTTP_URL'].rstrip('/')}/api/phonebooks/{phonebook.slug}.xml"
+    provisioning_url = f"{current_app.config['BASE_HTTP_URL'].rstrip('/')}/{phonebook.slug}.xml"
+    username = (current_app.config.get("PROVISION_USERNAME") or "").strip()
+    password = (current_app.config.get("PROVISION_PASSWORD") or "").strip()
+    provisioning_url_with_auth = provisioning_url
+    if username and password:
+        provisioning_url_with_auth = provisioning_url.replace(
+            "://", f"://{username}:{password}@"
+        )
 
     return render_template(
         "phonebook.html",
@@ -176,6 +183,7 @@ def view_phonebook(phonebook_id: int):
         entries=entries,
         ftp_path=ftp_path,
         provisioning_url=provisioning_url,
+        provisioning_url_with_auth=provisioning_url_with_auth,
     )
 
 
@@ -307,6 +315,7 @@ def xml_import(phonebook_id: int):
 
 
 @web.route("/api/phonebooks/<slug>.xml")
+@web.route("/<slug>.xml")
 def phonebook_xml(slug: str):
     phonebook = Phonebook.query.filter_by(slug=slug).first()
     if not phonebook:

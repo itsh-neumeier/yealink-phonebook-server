@@ -55,6 +55,10 @@ def test_csv_import_export_and_xml(client):
     assert b"YealinkIPPhoneDirectory" in xml_resp.data
     assert b"Alice" in xml_resp.data
 
+    xml_short_resp = client.get("/sales.xml")
+    assert xml_short_resp.status_code == 200
+    assert b"YealinkIPPhoneDirectory" in xml_short_resp.data
+
 
 def test_xml_import_export(client):
     client.post(
