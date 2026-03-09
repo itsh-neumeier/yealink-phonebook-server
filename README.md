@@ -26,6 +26,7 @@ Dockerized Flask application for Yealink phonebook provisioning over HTTP.
 - Admin-only user management
 - Non-root container user
 - Automatic startup database migrations for persistent volume compatibility
+- `PUID`/`PGID` support for bind-mounted host volumes
 
 ## Quick Start (Docker)
 Example `docker-compose.yml`:
@@ -45,11 +46,10 @@ services:
       ACCESS_DEFAULT_PASSWORD: "YbDemo!9K2xP4"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "change-me-now"
+      PUID: "1000"
+      PGID: "1000"
     volumes:
-      - yeabook_data:/data
-
-volumes:
-  yeabook_data:
+      - ./data:/data
 ```
 
 Start:
@@ -72,6 +72,13 @@ Default bootstrap credential env vars:
 - `ACCESS_DEFAULT_PASSWORD`
 
 Additional credentials are managed in the Access List admin page in the header.
+
+## Bind Mount Permissions
+If you use a host path (`./data:/data` or `/docker-volumes/...:/data`), the mounted folder must be writable by the container user.
+
+- Set `PUID` and `PGID` to your host user/group ID.
+- Ensure the host directory owner matches these IDs.
+- If startup fails, YeaBook now prints a clear permission error for `/data/phonebooks`.
 
 ## CSV Format
 ```csv

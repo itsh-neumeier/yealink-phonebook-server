@@ -12,8 +12,7 @@ services:
       ACCESS_DEFAULT_PASSWORD: "YbDemo!9K2xP4"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "change-me-now"
+      PUID: "1000"
+      PGID: "1000"
     volumes:
-      - phonebook_data:/data
-
-volumes:
-  phonebook_data:
+      - ./data:/data

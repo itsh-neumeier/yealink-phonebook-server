@@ -14,8 +14,11 @@ COPY . .
 
 RUN mkdir -p /data/phonebooks /app/instance && chown -R appuser:appuser /data /app
 
-USER appuser
+RUN chmod +x /app/scripts/docker-entrypoint.sh
+
+USER root
 
 EXPOSE 8080
 
+ENTRYPOINT ["/app/scripts/docker-entrypoint.sh"]
 CMD ["python", "-m", "app.main"]

@@ -26,6 +26,7 @@ Dockerisierte Flask-Anwendung fuer Yealink-Telefonbuch-Provisionierung ueber HTT
 - Benutzerverwaltung nur fuer Admins
 - Container laeuft als Nicht-Root-Benutzer
 - Automatische Datenbank-Migrationen beim Start fuer persistente Volume-Kompatibilitaet
+- `PUID`/`PGID` Unterstuetzung fuer Bind-Mount Host-Volumes
 
 ## Schnellstart (Docker)
 Beispiel `docker-compose.yml`:
@@ -45,11 +46,10 @@ services:
       ACCESS_DEFAULT_PASSWORD: "YbDemo!9K2xP4"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "change-me-now"
+      PUID: "1000"
+      PGID: "1000"
     volumes:
-      - yeabook_data:/data
-
-volumes:
-  yeabook_data:
+      - ./data:/data
 ```
 
 Start:
@@ -72,6 +72,13 @@ Default Bootstrap-Zugangsdaten per Env:
 - `ACCESS_DEFAULT_PASSWORD`
 
 Weitere Zugangsdaten werden in der Access-Liste im Header verwaltet.
+
+## Bind-Mount Berechtigungen
+Wenn ein Host-Pfad gemountet wird (`./data:/data` oder `/docker-volumes/...:/data`), muss der Ordner fuer den Container-Benutzer beschreibbar sein.
+
+- `PUID` und `PGID` auf die Host-UID/GID setzen.
+- Eigentuemer des Host-Ordners auf diese IDs setzen.
+- Bei Startfehlern gibt YeaBook jetzt eine klare Berechtigungs-Fehlermeldung fuer `/data/phonebooks` aus.
 
 ## CSV-Format
 ```csv
