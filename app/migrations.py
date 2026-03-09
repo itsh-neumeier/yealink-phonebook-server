@@ -100,12 +100,7 @@ def _migrate_v2_to_v3() -> None:
 
 def _migrate_v3_to_v4() -> None:
     with db.engine.begin() as conn:
-        columns = {
-            row[1]
-            for row in conn.execute(text("PRAGMA table_info(contact_entries)")).fetchall()
-        }
-        if "photo_filename" not in columns:
-            conn.execute(text("ALTER TABLE contact_entries ADD COLUMN photo_filename TEXT"))
+        # Reserved compatibility step for previously released schema version 4.
         _write_schema_version(conn, 4)
 
 

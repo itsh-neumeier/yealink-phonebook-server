@@ -273,25 +273,6 @@ def test_phonebook_delete_requires_slug_confirmation(client):
     assert b"Phonebook deleted." in ok.data
 
 
-def test_directory_xml_contains_photo_uri(client):
-    client.post(
-        "/login",
-        data={"username": "admin", "password": "admin123"},
-        follow_redirects=True,
-    )
-    client.post("/phonebooks", data={"name": "Photos"}, follow_redirects=True)
-    client.post(
-        "/phonebooks/1/entries",
-        data={"name": "Alice", "office": "1001"},
-        follow_redirects=True,
-    )
-    grant_default_access_to_phonebook(client, 1)
-
-    xml_resp = client.get("/photos.xml", headers=auth_headers())
-    assert xml_resp.status_code == 200
-    assert b"PhotoURI" in xml_resp.data
-
-
 def test_startup_migrates_legacy_volume_schema():
     tmp_db = tempfile.NamedTemporaryFile(prefix="legacy-db-", suffix=".sqlite", delete=False)
     tmp_db.close()

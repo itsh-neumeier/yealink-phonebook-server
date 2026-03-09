@@ -61,7 +61,6 @@ class ContactEntry(db.Model):
     line = db.Column(db.String(40), nullable=True)
     ring = db.Column(db.String(40), nullable=True)
     group = db.Column(db.String(120), nullable=True)
-    photo_filename = db.Column(db.String(255), nullable=True)
 
     __table_args__ = (
         db.CheckConstraint(
