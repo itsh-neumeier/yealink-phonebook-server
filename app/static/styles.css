@@ -1,5 +1,17 @@
 body {
-  background: #f5f7fb;
+  background: var(--app-bg);
+}
+
+:root {
+  --app-bg: #f5f7fb;
+}
+
+[data-bs-theme="dark"] {
+  --app-bg: #0f1216;
+}
+
+.app-nav {
+  background: color-mix(in oklab, var(--bs-body-bg) 92%, var(--bs-primary) 8%);
 }
 
 .card {
