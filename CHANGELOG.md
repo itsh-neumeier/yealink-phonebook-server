@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
+### Changed
+- Auto-update CHANGELOG.
+
+## [0.2.5] - 2026-03-09
 ### Added
 - Add ringtone presets with custom input and rename number labels.
 - Add error pages and fix language dropdown layering.
