@@ -7,6 +7,8 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ### Added
 - Add ringtone presets with custom input and rename number labels.
 - Add error pages and fix language dropdown layering.
+### Changed
+- Backfill releases and automate future updates.
 ### Fixed
 - Update German labels for line and department.
 
