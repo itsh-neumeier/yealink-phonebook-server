@@ -34,6 +34,32 @@ Dockerized Flask application providing:
 Important: FTP is not encrypted by default. For production, place this service behind a VPN or use a protected network segment. For internet exposure, add TLS termination and strict firewall rules.
 
 ## Quick Start (Docker)
+Example `docker-compose.yml`:
+```yaml
+version: "3.9"
+services:
+  yeabook:
+    image: ghcr.io/itsh-neumeier/yealink-phonebook-server:latest
+    container_name: yeabook
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "2121:2121"
+    environment:
+      SECRET_KEY: "change-me"
+      BASE_HTTP_URL: "https://phonebook.neumeier.cloud"
+      PROVISION_USERNAME: "yealinkphonebook"
+      PROVISION_PASSWORD: "yeaLINK9hn3BOOK!"
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "change-me-now"
+    volumes:
+      - yeabook_data:/data
+
+volumes:
+  yeabook_data:
+```
+
+Start:
 ```bash
 docker compose up --build
 ```
