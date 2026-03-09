@@ -5,9 +5,11 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Added
+- Add contact photo crop/upload, library zip export and safe phonebook delete.
 - Extend ringtone presets and add wav filename hint.
 - Auto-migrate persistent volume schema on startup.
 ### Changed
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
