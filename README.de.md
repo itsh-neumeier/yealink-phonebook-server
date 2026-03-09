@@ -36,7 +36,7 @@ Beispiel `docker-compose.yml`:
 version: "3.9"
 services:
   yeabook:
-    image: ghcr.io/itsh-neumeier/yealink-phonebook-server:latest
+    image: ghcr.io/itsh-neumeier/yeabook:latest
     container_name: yeabook
     restart: unless-stopped
     ports:
