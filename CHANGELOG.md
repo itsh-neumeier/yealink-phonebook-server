@@ -5,8 +5,10 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Added
+- Extend ringtone presets and add wav filename hint.
 - Auto-migrate persistent volume schema on startup.
 ### Changed
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 
