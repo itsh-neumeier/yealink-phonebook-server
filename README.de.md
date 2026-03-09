@@ -24,6 +24,7 @@ Dockerisierte Flask-Anwendung fuer Yealink-Telefonbuch-Provisionierung ueber HTT
 - Session-basierte Anmeldung fuer die WebUI
 - Benutzerverwaltung nur fuer Admins
 - Container laeuft als Nicht-Root-Benutzer
+- Automatische Datenbank-Migrationen beim Start fuer persistente Volume-Kompatibilitaet
 
 ## Schnellstart (Docker)
 Beispiel `docker-compose.yml`:
@@ -94,6 +95,11 @@ Tests ausfuehren:
 ```bash
 python -m pytest -q
 ```
+
+## Datenkompatibilitaet (Persistente Volumes)
+- Die Anwendung fuehrt beim Start automatische Schema-Migrationen aus.
+- Bestehende SQLite-Daten in gemounteten Volumes werden bei neuen Versionen vorwaerts migriert.
+- Die Migration ist additiv ausgelegt, damit vorhandene Telefonbuecher/Benutzer/Zugangsdaten bei Upgrades nutzbar bleiben.
 
 ## Versionierung
 Semantic Versioning 2.0.0: [https://semver.org/spec/v2.0.0.html](https://semver.org/spec/v2.0.0.html)

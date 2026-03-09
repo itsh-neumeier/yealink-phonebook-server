@@ -3,6 +3,7 @@ from pathlib import Path
 
 from flask import Flask
 
+from .migrations import migrate_database
 from .models import AccessCredential, User, db
 from .views import web
 
@@ -38,6 +39,7 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     with app.app_context():
         db.create_all()
+        migrate_database()
         bootstrap_admin(app)
         bootstrap_access_credential(app)
 

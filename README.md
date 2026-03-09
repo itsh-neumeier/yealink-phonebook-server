@@ -24,6 +24,7 @@ Dockerized Flask application for Yealink phonebook provisioning over HTTP.
 - Session-based login for WebUI
 - Admin-only user management
 - Non-root container user
+- Automatic startup database migrations for persistent volume compatibility
 
 ## Quick Start (Docker)
 Example `docker-compose.yml`:
@@ -94,6 +95,11 @@ Run tests:
 ```bash
 python -m pytest -q
 ```
+
+## Data Compatibility (Persistent Volumes)
+- The app runs automatic schema migrations on startup.
+- Existing SQLite data in mounted volumes is migrated forward when new versions add schema changes.
+- Migration is additive and designed to keep existing phonebooks/users/credentials usable across image upgrades.
 
 ## Versioning
 Semantic Versioning 2.0.0: [https://semver.org/spec/v2.0.0.html](https://semver.org/spec/v2.0.0.html)

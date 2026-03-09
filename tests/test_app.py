@@ -1,6 +1,11 @@
 from io import BytesIO
 import base64
+import sqlite3
+import tempfile
+from pathlib import Path
 
+from app import create_app
+from app.models import AccessCredentialPhonebook, PhonebookSettings, db
 from app.models import User
 
 
@@ -241,3 +246,65 @@ def test_business_menu_contains_signed_department_tokens(client):
     assert menu_resp.status_code == 200
     assert b"YealinkIPPhoneMenu" in menu_resp.data
     assert b"token=" in menu_resp.data
+
+
+def test_startup_migrates_legacy_volume_schema():
+    tmp_db = tempfile.NamedTemporaryFile(prefix="legacy-db-", suffix=".sqlite", delete=False)
+    tmp_db.close()
+    export_dir = tempfile.mkdtemp(prefix="legacy-exports-")
+
+    conn = sqlite3.connect(tmp_db.name)
+    conn.executescript(
+        """
+        CREATE TABLE phonebooks (
+            id INTEGER PRIMARY KEY,
+            name TEXT NOT NULL UNIQUE,
+            slug TEXT NOT NULL UNIQUE,
+            description TEXT,
+            created_at TEXT,
+            updated_at TEXT
+        );
+        CREATE TABLE users (
+            id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            is_admin INTEGER NOT NULL,
+            created_at TEXT
+        );
+        CREATE TABLE access_credentials (
+            id INTEGER PRIMARY KEY,
+            username TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            is_active INTEGER NOT NULL,
+            created_at TEXT
+        );
+        INSERT INTO phonebooks(id, name, slug) VALUES (1, 'Legacy', 'legacy');
+        INSERT INTO users(id, username, password_hash, is_admin) VALUES (1, 'admin', 'x', 1);
+        INSERT INTO access_credentials(id, username, password_hash, is_active) VALUES (1, 'reader', 'x', 1);
+        """
+    )
+    conn.commit()
+    conn.close()
+
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": f"sqlite:///{tmp_db.name}",
+            "EXPORT_DIR": export_dir,
+            "SECRET_KEY": "test-secret",
+            "ADMIN_USERNAME": "admin",
+            "ADMIN_PASSWORD": "admin123",
+            "ACCESS_DEFAULT_USERNAME": "apiuser",
+            "ACCESS_DEFAULT_PASSWORD": "apipass",
+        }
+    )
+
+    with app.app_context():
+        settings = PhonebookSettings.query.filter_by(phonebook_id=1).first()
+        permission = AccessCredentialPhonebook.query.filter_by(credential_id=1, phonebook_id=1).first()
+        assert settings is not None
+        assert settings.category == "private"
+        assert permission is not None
+        db.session.remove()
+        db.engine.dispose()
+    Path(tmp_db.name).unlink(missing_ok=True)
