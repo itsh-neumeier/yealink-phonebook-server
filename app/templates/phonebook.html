@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-{% set ring_presets = ["Standard", "Classic", "Bell", "Chime"] %}
+{% set ring_presets = ["Ring1.wav", "Ring2.wav", "Ring3.wav", "Ring4.wav", "Ring5.wav", "Ring6.wav", "Ring7.wav", "Ring8.wav", "Silent.wav", "Splash.wav"] %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <div>
     <h2 class="h4 mb-0">{{ phonebook.name }}</h2>
@@ -90,6 +90,7 @@
           </div>
           <div class="col-12 d-none" data-ring-custom-wrap>
             <input class="form-control" type="text" data-ring-custom placeholder="{{ tr('ring_custom_placeholder') }}">
+            <div class="form-text">{{ tr('ring_custom_help') }}</div>
           </div>
           <input type="hidden" name="ring" data-ring-hidden value="" />
           {% if category == 'business' %}
@@ -158,6 +159,7 @@
                             </div>
                             <div class="col-md-12 {% if not entry_is_custom %}d-none{% endif %}" data-ring-custom-wrap>
                               <input class="form-control form-control-sm" type="text" data-ring-custom value="{{ entry.ring if entry_is_custom else '' }}" placeholder="{{ tr('ring_custom_placeholder') }}">
+                              <div class="form-text">{{ tr('ring_custom_help') }}</div>
                             </div>
                             <input type="hidden" name="ring" data-ring-hidden value="{{ entry.ring or '' }}" />
                             <div class="col-md-8"><input class="form-control form-control-sm" name="group" value="{{ entry.group or '' }}" placeholder="{{ tr('department') }}"></div>
@@ -201,6 +203,7 @@
                           </div>
                           <div class="col-md-12 {% if not entry_is_custom %}d-none{% endif %}" data-ring-custom-wrap>
                             <input class="form-control form-control-sm" type="text" data-ring-custom value="{{ entry.ring if entry_is_custom else '' }}" placeholder="{{ tr('ring_custom_placeholder') }}">
+                            <div class="form-text">{{ tr('ring_custom_help') }}</div>
                           </div>
                           <input type="hidden" name="ring" data-ring-hidden value="{{ entry.ring or '' }}" />
                           <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
