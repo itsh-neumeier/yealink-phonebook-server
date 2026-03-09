@@ -9,9 +9,13 @@ Dockerisierte Flask-Anwendung fuer Yealink-Telefonbuch-Provisionierung ueber HTT
 - Mehrere Telefonbuecher verwalten
 - Telefonbuchname/Beschreibung bearbeiten
 - Kontakte anlegen, bearbeiten und loeschen
+- Kontaktfoto-Upload mit Browser-Cropper und automatischer Yealink-Groessenanpassung (JPEG)
+- Standard-Silhouettenfoto fuer Kontakte ohne eigenes Bild
 - CSV Import/Export
 - Yealink XML Import/Export
 - HTTP Provisioning Endpoint pro Telefonbuch: `/<slug>.xml`
+- Foto-Bibliothek pro Telefonbuch mit ZIP-Export
+- Sicheres Loeschen von Telefonbuechern mit Slug-Bestaetigung
 - Web-Authentifizierung mit Admin-Benutzerverwaltung
 - UI Sprachumschaltung (DE/EN)
 - Light/Dark Theme Toggle mit System-Autoerkennung

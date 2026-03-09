@@ -1,13 +1,19 @@
 import csv
+import io
 import os
 import re
 import xml.etree.ElementTree as ET
+from base64 import b64decode
 from pathlib import Path
+from uuid import uuid4
 
+from PIL import Image, ImageDraw
 from .models import ContactEntry, Phonebook, db
 
 
 CSV_COLUMNS = ["name", "office", "mobile", "other", "line", "ring", "group"]
+YEALINK_PHOTO_SIZE = (96, 96)
+DEFAULT_PHOTO_FILENAME = "default-contact.jpg"
 
 
 def slugify(value: str) -> str:
@@ -57,7 +63,13 @@ def export_phonebook_xml(phonebook: Phonebook, export_dir: str) -> Path:
     return path
 
 
-def render_directory_xml(title_text: str, prompt_text: str, entries: list[ContactEntry], include_group: bool) -> str:
+def render_directory_xml(
+    title_text: str,
+    prompt_text: str,
+    entries: list[ContactEntry],
+    include_group: bool,
+    photo_urls: dict[int, str] | None = None,
+) -> str:
     root = ET.Element("YealinkIPPhoneDirectory")
     title = ET.SubElement(root, "Title")
     title.text = title_text
@@ -75,6 +87,9 @@ def render_directory_xml(title_text: str, prompt_text: str, entries: list[Contac
         if include_group and entry.group:
             group_node = ET.SubElement(item, "Group")
             group_node.text = entry.group
+        if photo_urls and entry.id in photo_urls:
+            photo_node = ET.SubElement(item, "PhotoURI")
+            photo_node.text = photo_urls[entry.id]
 
     return ET.tostring(root, encoding="utf-8", xml_declaration=True).decode("utf-8")
 
@@ -197,5 +212,64 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
 
     db.session.commit()
     return inserted
-    is_business = bool(phonebook.settings and phonebook.settings.category == "business")
-    is_business = bool(phonebook.settings and phonebook.settings.category == "business")
+
+
+def parse_data_url_image(data_url: str) -> bytes:
+    if not data_url:
+        raise ValueError("Empty image payload.")
+    pattern = re.compile(r"^data:image/(png|jpeg|jpg|webp);base64,(.+)$", re.IGNORECASE)
+    match = pattern.match(data_url.strip())
+    if not match:
+        raise ValueError("Invalid image format.")
+    try:
+        return b64decode(match.group(2), validate=True)
+    except ValueError as exc:
+        raise ValueError("Invalid base64 image payload.") from exc
+
+
+def save_contact_photo(data_url: str, photo_dir: Path) -> str:
+    payload = parse_data_url_image(data_url)
+    if len(payload) > 8 * 1024 * 1024:
+        raise ValueError("Image too large.")
+
+    with Image.open(io.BytesIO(payload)) as image:
+        image = image.convert("RGB")
+        image = _square_crop(image)
+        image = image.resize(YEALINK_PHOTO_SIZE, Image.Resampling.LANCZOS)
+        filename = f"{uuid4().hex}.jpg"
+        os.makedirs(photo_dir, exist_ok=True)
+        output = photo_dir / filename
+        image.save(output, format="JPEG", quality=88, optimize=True)
+        return filename
+
+
+def delete_contact_photo(photo_dir: Path, filename: str | None) -> None:
+    if not filename or filename == DEFAULT_PHOTO_FILENAME:
+        return
+    target = photo_dir / filename
+    if target.exists():
+        target.unlink()
+
+
+def _square_crop(image: Image.Image) -> Image.Image:
+    width, height = image.size
+    side = min(width, height)
+    left = (width - side) // 2
+    top = (height - side) // 2
+    return image.crop((left, top, left + side, top + side))
+
+
+def ensure_default_contact_photo(photo_dir: Path) -> str:
+    os.makedirs(photo_dir, exist_ok=True)
+    target = photo_dir / DEFAULT_PHOTO_FILENAME
+    if target.exists():
+        return DEFAULT_PHOTO_FILENAME
+
+    canvas = Image.new("RGB", YEALINK_PHOTO_SIZE, (235, 239, 245))
+    draw = ImageDraw.Draw(canvas)
+    # head
+    draw.ellipse((30, 16, 66, 52), fill=(120, 130, 145))
+    # shoulders/body
+    draw.rounded_rectangle((18, 50, 78, 90), radius=18, fill=(120, 130, 145))
+    canvas.save(target, format="JPEG", quality=88, optimize=True)
+    return DEFAULT_PHOTO_FILENAME

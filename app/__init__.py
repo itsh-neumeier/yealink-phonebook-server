@@ -5,6 +5,7 @@ from flask import Flask
 
 from .migrations import migrate_database
 from .models import AccessCredential, User, db
+from .services import ensure_default_contact_photo
 from .views import web
 
 
@@ -18,6 +19,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         SQLALCHEMY_DATABASE_URI=os.environ.get("DATABASE_URL", default_db),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         EXPORT_DIR=os.environ.get("EXPORT_DIR", "/data/phonebooks"),
+        PHOTO_DIR=os.environ.get("PHOTO_DIR", "/data/photos"),
         BASE_HTTP_URL=os.environ.get("BASE_HTTP_URL", "http://localhost:8080"),
         ACCESS_DEFAULT_USERNAME=os.environ.get("ACCESS_DEFAULT_USERNAME", "yeabook_client"),
         ACCESS_DEFAULT_PASSWORD=os.environ.get("ACCESS_DEFAULT_PASSWORD", "change-me-now"),
@@ -34,6 +36,8 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     os.makedirs(app.instance_path, exist_ok=True)
     os.makedirs(app.config["EXPORT_DIR"], exist_ok=True)
+    os.makedirs(app.config["PHOTO_DIR"], exist_ok=True)
+    ensure_default_contact_photo(Path(app.config["PHOTO_DIR"]))
 
     db.init_app(app)
 

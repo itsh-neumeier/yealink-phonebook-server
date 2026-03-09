@@ -61,3 +61,33 @@ code {
 .group-row > td {
   background: var(--group-row-bg);
 }
+
+.entry-photo-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--panel-border);
+}
+
+.entry-photo-preview {
+  width: 76px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.library-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.crop-area {
+  min-height: 360px;
+}
+
+.crop-area img {
+  max-width: 100%;
+}

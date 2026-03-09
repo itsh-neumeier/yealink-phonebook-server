@@ -5,7 +5,7 @@ from sqlalchemy import text
 from .models import db
 
 
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 
 
 def migrate_database() -> None:
@@ -25,6 +25,8 @@ def migrate_database() -> None:
             _migrate_v1_to_v2()
         elif version == 2:
             _migrate_v2_to_v3()
+        elif version == 3:
+            _migrate_v3_to_v4()
         version += 1
 
 
@@ -94,6 +96,17 @@ def _migrate_v2_to_v3() -> None:
         )
         _grant_existing_credentials_all_phonebooks(conn)
         _write_schema_version(conn, 3)
+
+
+def _migrate_v3_to_v4() -> None:
+    with db.engine.begin() as conn:
+        columns = {
+            row[1]
+            for row in conn.execute(text("PRAGMA table_info(contact_entries)")).fetchall()
+        }
+        if "photo_filename" not in columns:
+            conn.execute(text("ALTER TABLE contact_entries ADD COLUMN photo_filename TEXT"))
+        _write_schema_version(conn, 4)
 
 
 def _grant_existing_credentials_all_phonebooks(conn) -> None:

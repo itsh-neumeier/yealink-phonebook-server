@@ -1,5 +1,6 @@
 import os
 import tempfile
+import zipfile
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -34,10 +35,13 @@ from .models import (
 from .services import (
     export_phonebook_csv,
     export_phonebook_xml,
+    delete_contact_photo,
     import_phonebook_csv,
     import_phonebook_xml,
     render_directory_xml,
     render_menu_xml,
+    save_contact_photo,
+    DEFAULT_PHOTO_FILENAME,
     slugify,
 )
 
@@ -314,6 +318,52 @@ def edit_phonebook(phonebook_id: int):
     return redirect(url_for("web.view_phonebook", phonebook_id=phonebook.id))
 
 
+@web.route("/phonebooks/<int:phonebook_id>/delete", methods=["POST"])
+@login_required
+def delete_phonebook(phonebook_id: int):
+    phonebook = Phonebook.query.get_or_404(phonebook_id)
+    confirm_slug = (request.form.get("confirm_slug") or "").strip()
+    if confirm_slug != phonebook.slug:
+        flash(translate(g.lang, "confirm_slug_mismatch"), "danger")
+        return redirect(url_for("web.view_phonebook", phonebook_id=phonebook.id))
+
+    for entry in phonebook.entries.all():
+        delete_contact_photo(Path(current_app.config["PHOTO_DIR"]), entry.photo_filename)
+
+    db.session.delete(phonebook)
+    db.session.commit()
+    flash(translate(g.lang, "phonebook_deleted"), "success")
+    return redirect(url_for("web.index"))
+
+
+@web.route("/phonebooks/<int:phonebook_id>/photos.zip")
+@login_required
+def phonebook_photos_zip(phonebook_id: int):
+    phonebook = Phonebook.query.get_or_404(phonebook_id)
+    photo_dir = Path(current_app.config["PHOTO_DIR"])
+    entries = phonebook.entries.order_by(ContactEntry.name.asc()).all()
+
+    with tempfile.NamedTemporaryFile(prefix="photos-", suffix=".zip", delete=False) as tmp:
+        zip_path = Path(tmp.name)
+
+    with zipfile.ZipFile(zip_path, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for entry in entries:
+            effective_name = entry.photo_filename or DEFAULT_PHOTO_FILENAME
+            source = photo_dir / effective_name
+            if not source.exists():
+                continue
+            safe_name = slugify(entry.name)
+            archive_name = f"{phonebook.slug}/{entry.id}-{safe_name}.jpg"
+            archive.write(source, arcname=archive_name)
+
+    return send_file(
+        zip_path,
+        mimetype="application/zip",
+        as_attachment=True,
+        download_name=f"{phonebook.slug}-photos.zip",
+    )
+
+
 @web.route("/phonebooks/<int:phonebook_id>")
 @login_required
 def view_phonebook(phonebook_id: int):
@@ -332,6 +382,8 @@ def view_phonebook(phonebook_id: int):
         provisioning_url_with_auth = provisioning_url.replace(
             "://", f"://{first_cred.username}:<password>@"
         )
+    photo_urls = {entry.id: _build_photo_url(phonebook.slug, entry) for entry in entries}
+    photo_entries = entries
 
     return render_template(
         "phonebook.html",
@@ -341,6 +393,8 @@ def view_phonebook(phonebook_id: int):
         grouped_entries=_group_entries(entries) if category == "business" else [],
         provisioning_url=provisioning_url,
         provisioning_url_with_auth=provisioning_url_with_auth,
+        photo_urls=photo_urls,
+        photo_entries=photo_entries,
     )
 
 
@@ -356,12 +410,21 @@ def add_entry(phonebook_id: int):
     line = (request.form.get("line") or "").strip() or None
     ring = (request.form.get("ring") or "").strip() or None
     group = (request.form.get("group") or "").strip() or None
+    photo_data = (request.form.get("photo_data") or "").strip()
+    photo_filename = None
     if not _is_business_phonebook(phonebook):
         group = None
 
     if not name or not any([office, mobile, other]):
         flash(translate(g.lang, "entry_fields_required"), "danger")
         return redirect(url_for("web.view_phonebook", phonebook_id=phonebook.id))
+
+    if photo_data:
+        try:
+            photo_filename = save_contact_photo(photo_data, Path(current_app.config["PHOTO_DIR"]))
+        except ValueError as exc:
+            flash(str(exc), "danger")
+            return redirect(url_for("web.view_phonebook", phonebook_id=phonebook.id))
 
     db.session.add(
         ContactEntry(
@@ -373,6 +436,7 @@ def add_entry(phonebook_id: int):
             line=line,
             ring=ring,
             group=group,
+            photo_filename=photo_filename,
         )
     )
     db.session.commit()
@@ -395,6 +459,8 @@ def edit_entry(entry_id: int):
     line = (request.form.get("line") or "").strip() or None
     ring = (request.form.get("ring") or "").strip() or None
     group = (request.form.get("group") or "").strip() or None
+    photo_data = (request.form.get("photo_data") or "").strip()
+    remove_photo = request.form.get("remove_photo") == "on"
     if not _is_business_phonebook(phonebook):
         group = None
 
@@ -409,6 +475,17 @@ def edit_entry(entry_id: int):
     entry.line = line
     entry.ring = ring
     entry.group = group
+    if remove_photo and entry.photo_filename:
+        delete_contact_photo(Path(current_app.config["PHOTO_DIR"]), entry.photo_filename)
+        entry.photo_filename = None
+    if photo_data:
+        try:
+            new_filename = save_contact_photo(photo_data, Path(current_app.config["PHOTO_DIR"]))
+        except ValueError as exc:
+            flash(str(exc), "danger")
+            return redirect(url_for("web.view_phonebook", phonebook_id=phonebook.id))
+        delete_contact_photo(Path(current_app.config["PHOTO_DIR"]), entry.photo_filename)
+        entry.photo_filename = new_filename
     db.session.commit()
     export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])
 
@@ -422,6 +499,7 @@ def delete_entry(entry_id: int):
     entry = ContactEntry.query.get_or_404(entry_id)
     phonebook = entry.phonebook
 
+    delete_contact_photo(Path(current_app.config["PHOTO_DIR"]), entry.photo_filename)
     db.session.delete(entry)
     db.session.commit()
     export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])
@@ -555,11 +633,13 @@ def phonebook_xml(slug: str):
         )
         return Response(xml, mimetype="application/xml")
 
+    photo_urls = _photo_urls_for_entries(phonebook.slug, entries)
     xml = render_directory_xml(
         title_text=phonebook.name,
         prompt_text=f"Directory: {phonebook.name}",
         entries=entries,
         include_group=False,
+        photo_urls=photo_urls,
     )
     return Response(xml, mimetype="application/xml")
 
@@ -610,13 +690,44 @@ def phonebook_department_xml(slug: str, dept_slug: str):
         abort(404)
 
     filtered = [e for e in entries if ((e.group or "General").strip() or "General") == dept_name]
+    photo_urls = _photo_urls_for_entries(phonebook.slug, filtered)
     xml = render_directory_xml(
         title_text=f"{phonebook.name} - {dept_name}",
         prompt_text=f"Department: {dept_name}",
         entries=filtered,
         include_group=True,
+        photo_urls=photo_urls,
     )
     return Response(xml, mimetype="application/xml")
+
+
+@web.route("/api/phonebooks/<slug>/photos/<photo_name>")
+@web.route("/<slug>/photos/<photo_name>")
+def photo_file(slug: str | None = None, photo_name: str | None = None):
+    token_data = _verify_photo_token(request.args.get("token", ""))
+    if not token_data:
+        return _basic_auth_challenge()
+
+    phonebook = Phonebook.query.filter_by(slug=slug).first()
+    if not phonebook:
+        abort(404)
+
+    if token_data.get("phonebook_id") != phonebook.id:
+        return Response(translate(g.lang, "forbidden"), 403)
+    if token_data.get("photo_name") != photo_name:
+        return Response(translate(g.lang, "forbidden"), 403)
+
+    entry = ContactEntry.query.get(token_data.get("entry_id"))
+    if not entry or entry.phonebook_id != phonebook.id:
+        abort(404)
+    expected = entry.photo_filename or DEFAULT_PHOTO_FILENAME
+    if expected != photo_name:
+        abort(404)
+
+    path = Path(current_app.config["PHOTO_DIR"]) / photo_name
+    if not path.exists():
+        abort(404)
+    return send_file(path, mimetype="image/jpeg")
 
 
 @web.route("/healthz")
@@ -696,6 +807,42 @@ def _verify_submenu_token(token: str) -> dict | None:
         return _token_serializer().loads(token, max_age=3600)
     except (BadSignature, SignatureExpired):
         return None
+
+
+def _photo_token_serializer() -> URLSafeTimedSerializer:
+    return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt="photo-token")
+
+
+def _issue_photo_token(phonebook_id: int, entry_id: int, photo_name: str) -> str:
+    payload = {
+        "phonebook_id": phonebook_id,
+        "entry_id": entry_id,
+        "photo_name": photo_name,
+    }
+    return _photo_token_serializer().dumps(payload)
+
+
+def _verify_photo_token(token: str) -> dict | None:
+    if not token:
+        return None
+    try:
+        return _photo_token_serializer().loads(token, max_age=3600)
+    except (BadSignature, SignatureExpired):
+        return None
+
+
+def _photo_urls_for_entries(phonebook_slug: str, entries: list[ContactEntry]) -> dict[int, str]:
+    urls: dict[int, str] = {}
+    for entry in entries:
+        urls[entry.id] = _build_photo_url(phonebook_slug, entry)
+    return urls
+
+
+def _build_photo_url(phonebook_slug: str, entry: ContactEntry) -> str:
+    photo_name = entry.photo_filename or DEFAULT_PHOTO_FILENAME
+    token = _issue_photo_token(entry.phonebook_id, entry.id, photo_name)
+    base = current_app.config["BASE_HTTP_URL"].rstrip("/")
+    return f"{base}/{phonebook_slug}/photos/{photo_name}?token={token}"
 
 
 def _render_error_page(status_code: int):
