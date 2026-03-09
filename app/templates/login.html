@@ -4,18 +4,18 @@
   <div class="col-md-5 col-lg-4">
     <div class="card shadow-sm">
       <div class="card-body p-4">
-        <h1 class="h5 mb-3">Sign in</h1>
+        <h1 class="h5 mb-3">{{ tr('sign_in') }}</h1>
         <form method="post" action="{{ url_for('web.login') }}" class="row g-3">
           <div class="col-12">
-            <label class="form-label" for="username">Username</label>
+            <label class="form-label" for="username">{{ tr('username') }}</label>
             <input class="form-control" id="username" name="username" required>
           </div>
           <div class="col-12">
-            <label class="form-label" for="password">Password</label>
+            <label class="form-label" for="password">{{ tr('password') }}</label>
             <input class="form-control" type="password" id="password" name="password" required>
           </div>
           <div class="col-12">
-            <button class="btn btn-primary w-100" type="submit">Login</button>
+            <button class="btn btn-primary w-100" type="submit">{{ tr('login') }}</button>
           </div>
         </form>
       </div>

@@ -1,13 +1,15 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light">
+<html lang="{{ lang }}" data-bs-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YeaBook</title>
+  <title>{{ tr('app_name') }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}" />
   <script>
     (() => {
       const saved = localStorage.getItem("theme");
-      const theme = saved === "dark" ? "dark" : "light";
+      const preferred = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      const theme = saved === "dark" || saved === "light" ? saved : preferred;
       document.documentElement.setAttribute("data-bs-theme", theme);
     })();
   </script>
@@ -17,16 +19,25 @@
 <body>
   <nav class="navbar navbar-expand-lg border-bottom app-nav mb-4">
     <div class="container">
-      <a class="navbar-brand fw-semibold" href="{{ url_for('web.index') }}">YeaBook</a>
+      <a class="navbar-brand fw-semibold" href="{{ url_for('web.index') }}">{{ tr('app_name') }}</a>
       <div class="d-flex align-items-center gap-2">
-        <button id="themeToggle" class="btn btn-sm btn-outline-secondary" type="button">Dark Mode</button>
+        <button id="themeToggle" class="btn btn-sm btn-outline-secondary" type="button">{{ tr('theme_dark') }}</button>
+        <form method="post" action="{{ url_for('web.set_language', lang_code='de') }}" class="mb-0">
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="btn btn-sm {% if lang == 'de' %}btn-primary{% else %}btn-outline-primary{% endif %}" type="submit">DE</button>
+        </form>
+        <form method="post" action="{{ url_for('web.set_language', lang_code='en') }}" class="mb-0">
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="btn btn-sm {% if lang == 'en' %}btn-primary{% else %}btn-outline-primary{% endif %}" type="submit">EN</button>
+        </form>
         {% if g.user %}
         <span class="small text-body-secondary">{{ g.user.username }}</span>
         {% if g.user.is_admin %}
-        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('web.users') }}">Users</a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('web.users') }}">{{ tr('users') }}</a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('web.access_credentials') }}">{{ tr('access_list') }}</a>
         {% endif %}
         <form method="post" action="{{ url_for('web.logout') }}" class="mb-0">
-          <button class="btn btn-sm btn-outline-danger" type="submit">Logout</button>
+          <button class="btn btn-sm btn-outline-danger" type="submit">{{ tr('logout') }}</button>
         </form>
         {% endif %}
       </div>
@@ -56,7 +67,7 @@
 
       const setLabel = () => {
         const theme = html.getAttribute("data-bs-theme");
-        btn.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+        btn.textContent = theme === "dark" ? "{{ tr('theme_light') }}" : "{{ tr('theme_dark') }}";
       };
 
       if (btn) {

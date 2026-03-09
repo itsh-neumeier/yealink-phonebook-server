@@ -5,34 +5,44 @@
     <h2 class="h4 mb-0">{{ phonebook.name }}</h2>
     {% if phonebook.description %}<small class="text-muted">{{ phonebook.description }}</small>{% endif %}
   </div>
-  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">Back</a>
+  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">{{ tr('back') }}</a>
 </div>
 
 <div class="row g-4">
   <div class="col-xl-4">
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h5 class="card-title">Provisioning</h5>
-        <p class="small mb-2"><strong>HTTP URL</strong><br><code>{{ provisioning_url }}</code></p>
-        <p class="small mb-2"><strong>HTTP URL (with auth)</strong><br><code>{{ provisioning_url_with_auth }}</code></p>
-        <p class="small mb-0"><strong>FTP path</strong><br><code>{{ ftp_path }}</code></p>
+        <h5 class="card-title">{{ tr('edit_phonebook') }}</h5>
+        <form method="post" action="{{ url_for('web.edit_phonebook', phonebook_id=phonebook.id) }}" class="row g-2">
+          <div class="col-12"><input class="form-control" name="name" value="{{ phonebook.name }}" required></div>
+          <div class="col-12"><textarea class="form-control" name="description" rows="2">{{ phonebook.description or '' }}</textarea></div>
+          <div class="col-12"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save_phonebook') }}</button></div>
+        </form>
       </div>
     </div>
 
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h5 class="card-title">Yealink XML</h5>
-        <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.xml_export', phonebook_id=phonebook.id) }}">Export XML</a>
+        <h5 class="card-title">{{ tr('provisioning') }}</h5>
+        <p class="small mb-2"><strong>{{ tr('http_url') }}</strong><br><code>{{ provisioning_url }}</code></p>
+        <p class="small mb-2"><strong>{{ tr('http_url_auth') }}</strong><br><code>{{ provisioning_url_with_auth }}</code></p>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h5 class="card-title">{{ tr('yealink_xml') }}</h5>
+        <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.xml_export', phonebook_id=phonebook.id) }}">{{ tr('export_xml') }}</a>
         <form method="post" action="{{ url_for('web.xml_import', phonebook_id=phonebook.id) }}" enctype="multipart/form-data" class="row g-2">
           <div class="col-12">
             <input class="form-control" type="file" name="xml_file" accept=".xml,.txt" required />
           </div>
           <div class="col-12 form-check ms-1">
             <input class="form-check-input" type="checkbox" name="replace_existing" id="replace_existing">
-            <label class="form-check-label" for="replace_existing">Replace existing entries</label>
+            <label class="form-check-label" for="replace_existing">{{ tr('replace_existing_entries') }}</label>
           </div>
           <div class="col-12">
-            <button class="btn btn-primary btn-sm" type="submit">Import XML</button>
+            <button class="btn btn-primary btn-sm" type="submit">{{ tr('import_xml') }}</button>
           </div>
         </form>
       </div>
@@ -40,14 +50,14 @@
 
     <div class="card shadow-sm mb-4">
       <div class="card-body">
-        <h5 class="card-title">CSV</h5>
-        <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.csv_export', phonebook_id=phonebook.id) }}">Export CSV</a>
+        <h5 class="card-title">{{ tr('csv') }}</h5>
+        <a class="btn btn-sm btn-success mb-3" href="{{ url_for('web.csv_export', phonebook_id=phonebook.id) }}">{{ tr('export_csv') }}</a>
         <form method="post" action="{{ url_for('web.csv_import', phonebook_id=phonebook.id) }}" enctype="multipart/form-data" class="row g-2">
           <div class="col-12">
             <input class="form-control" type="file" name="csv_file" accept=".csv" required />
           </div>
           <div class="col-12">
-            <button class="btn btn-primary btn-sm" type="submit">Import CSV</button>
+            <button class="btn btn-primary btn-sm" type="submit">{{ tr('import_csv') }}</button>
           </div>
         </form>
       </div>
@@ -55,16 +65,16 @@
 
     <div class="card shadow-sm">
       <div class="card-body">
-        <h5 class="card-title">Add Entry</h5>
+        <h5 class="card-title">{{ tr('add_entry') }}</h5>
         <form method="post" action="{{ url_for('web.add_entry', phonebook_id=phonebook.id) }}" class="row g-2">
-          <div class="col-12"><input class="form-control" name="name" placeholder="Name" required></div>
-          <div class="col-12"><input class="form-control" name="office" placeholder="Office"></div>
-          <div class="col-12"><input class="form-control" name="mobile" placeholder="Mobile"></div>
-          <div class="col-12"><input class="form-control" name="other" placeholder="Other"></div>
-          <div class="col-6"><input class="form-control" name="line" placeholder="Line"></div>
-          <div class="col-6"><input class="form-control" name="ring" placeholder="Ring"></div>
-          <div class="col-12"><input class="form-control" name="group" placeholder="Group"></div>
-          <div class="col-12"><button class="btn btn-primary" type="submit">Add</button></div>
+          <div class="col-12"><input class="form-control" name="name" placeholder="{{ tr('name') }}" required></div>
+          <div class="col-12"><input class="form-control" name="office" placeholder="{{ tr('office') }}"></div>
+          <div class="col-12"><input class="form-control" name="mobile" placeholder="{{ tr('mobile') }}"></div>
+          <div class="col-12"><input class="form-control" name="other" placeholder="{{ tr('other') }}"></div>
+          <div class="col-6"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
+          <div class="col-6"><input class="form-control" name="ring" placeholder="{{ tr('ring') }}"></div>
+          <div class="col-12"><input class="form-control" name="group" placeholder="{{ tr('group') }}"></div>
+          <div class="col-12"><button class="btn btn-primary" type="submit">{{ tr('add') }}</button></div>
         </form>
       </div>
     </div>
@@ -73,12 +83,12 @@
   <div class="col-xl-8">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h5 class="card-title">Entries</h5>
+        <h5 class="card-title">{{ tr('entries') }}</h5>
         <div class="table-responsive">
           <table class="table table-sm align-middle">
             <thead>
               <tr>
-                <th>Name</th><th>Office</th><th>Mobile</th><th>Other</th><th>Group</th><th></th>
+                <th>{{ tr('name') }}</th><th>{{ tr('office') }}</th><th>{{ tr('mobile') }}</th><th>{{ tr('other') }}</th><th>{{ tr('group') }}</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -90,13 +100,28 @@
                 <td>{{ entry.other or '' }}</td>
                 <td>{{ entry.group or '' }}</td>
                 <td class="text-end">
-                  <form method="post" action="{{ url_for('web.delete_entry', entry_id=entry.id) }}">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-{{ entry.id }}">{{ tr('edit') }}</button>
+                  <form method="post" action="{{ url_for('web.delete_entry', entry_id=entry.id) }}" class="d-inline">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">{{ tr('delete') }}</button>
+                  </form>
+                </td>
+              </tr>
+              <tr class="collapse" id="edit-{{ entry.id }}">
+                <td colspan="6">
+                  <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2">
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ entry.name }}" required></div>
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="office" value="{{ entry.office or '' }}" placeholder="{{ tr('office') }}"></div>
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
+                    <div class="col-md-4"><input class="form-control form-control-sm" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ring') }}"></div>
+                    <div class="col-md-8"><input class="form-control form-control-sm" name="group" value="{{ entry.group or '' }}" placeholder="{{ tr('group') }}"></div>
+                    <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                   </form>
                 </td>
               </tr>
               {% else %}
-              <tr><td colspan="6" class="text-muted">No entries yet.</td></tr>
+              <tr><td colspan="6" class="text-muted">{{ tr('no_entries') }}</td></tr>
               {% endfor %}
             </tbody>
           </table>

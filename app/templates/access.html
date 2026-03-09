@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 mb-0">{{ tr('access_list') }}</h2>
+  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">{{ tr('back') }}</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">{{ tr('create_access_credential') }}</h5>
+        <form method="post" action="{{ url_for('web.create_access_credential') }}" class="row g-2">
+          <div class="col-12"><input class="form-control" name="username" placeholder="{{ tr('username') }}" required></div>
+          <div class="col-12"><input class="form-control" name="password" type="password" placeholder="{{ tr('password') }}" required></div>
+          <div class="col-12 form-check ms-1">
+            <input class="form-check-input" type="checkbox" name="is_active" id="is_active" checked>
+            <label class="form-check-label" for="is_active">Active</label>
+          </div>
+          <div class="col-12"><button class="btn btn-primary" type="submit">{{ tr('create') }}</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">{{ tr('access_list') }}</h5>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead><tr><th>{{ tr('username') }}</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              {% for cred in credentials %}
+              <tr>
+                <td>{{ cred.username }}</td>
+                <td>{% if cred.is_active %}Active{% else %}Inactive{% endif %}</td>
+                <td class="text-end">
+                  <form method="post" action="{{ url_for('web.toggle_access_credential', credential_id=cred.id) }}" class="d-inline">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">Toggle</button>
+                  </form>
+                  <form method="post" action="{{ url_for('web.delete_access_credential', credential_id=cred.id) }}" class="d-inline">
+                    <button class="btn btn-outline-danger btn-sm" type="submit">{{ tr('delete') }}</button>
+                  </form>
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3" class="text-muted">No credentials yet.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

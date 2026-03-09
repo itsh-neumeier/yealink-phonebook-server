@@ -12,10 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /data/ftp/phonebooks /app/instance && chown -R appuser:appuser /data /app
+RUN mkdir -p /data/phonebooks /app/instance && chown -R appuser:appuser /data /app
 
 USER appuser
 
-EXPOSE 8080 2121
+EXPOSE 8080
 
 CMD ["python", "-m", "app.main"]

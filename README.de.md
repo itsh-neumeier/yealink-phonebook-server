@@ -1,37 +1,29 @@
-﻿# YeaBook (Deutsch)
+# YeaBook (Deutsch)
 
-Dockerisierte Flask-Anwendung mit:
-- WebUI (Bootstrap) zur Verwaltung mehrerer Yealink-Telefonbücher
-- Authentifiziertem WebUI inkl. Admin-Userverwaltung
-- FTP-Usermanagement und Bereitstellung der Telefonbücher per FTP
-- CSV Import/Export
-- Yealink XML Import/Export (UI + API)
-- Yealink XML Provisioning Endpoint
+Dockerisierte Flask-Anwendung fuer Yealink-Telefonbuch-Provisionierung ueber HTTP.
 
 ## Sprachversionen
 - Englische Dokumentation: [README.md](README.md)
 
 ## Funktionen
-- Mehrere Telefonbücher mit eindeutigen Slugs
-- Kontaktverwaltung (office/mobile/other)
-- Automatische Yealink-XML-Generierung je Telefonbuch
+- Mehrere Telefonbuecher verwalten
+- Telefonbuchname/Beschreibung bearbeiten
+- Kontakte anlegen, bearbeiten und loeschen
 - CSV Import/Export
-- Yealink XML Import/Export (UI + API) für Massenpflege
-- Web-Authentifizierung (Session-basiert)
-- Admin-verwaltete Benutzer (Web + FTP)
-- FTP-Server mit Read-only Rechten
+- Yealink XML Import/Export
+- HTTP Provisioning Endpoint pro Telefonbuch: `/<slug>.xml`
+- Web-Authentifizierung mit Admin-Benutzerverwaltung
+- UI Sprachumschaltung (DE/EN)
+- Light/Dark Theme Toggle mit System-Autoerkennung
+- Favicon enthalten
 - Funktionstests mit pytest
 - CI- und GHCR-Release-Pipeline
 
 ## IT-Sicherheit
-- Passwörter werden gehasht gespeichert (Werkzeug)
-- Keine Klartext-Passwörter in der Datenbank
-- WebUI nur nach Login erreichbar
-- User- und FTP-Verwaltung nur für Admins
-- FTP-Nutzer haben nur Leserechte (`elr`)
-- Container läuft als Nicht-Root-Benutzer
-
-Wichtig: FTP ist standardmäßig unverschlüsselt. Für Produktion nur in geschützten Netzen (z. B. VPN) oder mit zusätzlicher Absicherung (TLS-Termination, Firewall, Segmentierung) einsetzen.
+- Passwoerter werden gehasht gespeichert
+- Session-basierte Anmeldung fuer die WebUI
+- Benutzerverwaltung nur fuer Admins
+- Container laeuft als Nicht-Root-Benutzer
 
 ## Schnellstart (Docker)
 Beispiel `docker-compose.yml`:
@@ -44,12 +36,11 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
-      - "2121:2121"
     environment:
       SECRET_KEY: "change-me"
       BASE_HTTP_URL: "https://phonebook.neumeier.cloud"
-      PROVISION_USERNAME: "yealinkphonebook"
-      PROVISION_PASSWORD: "yeaLINK9hn3BOOK!"
+      ACCESS_DEFAULT_USERNAME: "yeabook_demo_u82"
+      ACCESS_DEFAULT_PASSWORD: "YbDemo!9K2xP4"
       ADMIN_USERNAME: "admin"
       ADMIN_PASSWORD: "change-me-now"
     volumes:
@@ -67,26 +58,20 @@ docker compose up --build
 WebUI:
 - URL: `http://localhost:8080/login`
 - Standard-Admin: `admin`
-- Standard-Passwort: `change-me-now` (in `docker-compose.yml`)
-
-FTP:
-- Host: `localhost`
-- Port: `2121`
-- Zugangsdaten: über WebUI (`Users`)
-- Telefonbuchdateien: `/<phonebook-slug>.xml`
+- Standard-Passwort: `change-me-now`
 
 ## Yealink Provisioning URLs
 Pro Telefonbuch:
 - HTTP: `http://<host>:8080/<slug>.xml`
-- HTTP (mit Auth in URL): `http://<user>:<password>@<host>:8080/<slug>.xml`
-- FTP: `ftp://<ftp-user>:<ftp-pass>@<host>:2121/<slug>.xml`
+- HTTP (mit Auth in URL): `http://<user>:<password>@<host>/<slug>.xml`
 
-Optionale Env-Variablen für die Anzeige des Auth-Links in der UI:
-- `PROVISION_USERNAME`
-- `PROVISION_PASSWORD`
+Default Bootstrap-Zugangsdaten per Env:
+- `ACCESS_DEFAULT_USERNAME`
+- `ACCESS_DEFAULT_PASSWORD`
+
+Weitere Zugangsdaten werden in der Access-Liste im Header verwaltet.
 
 ## CSV-Format
-Header:
 ```csv
 name,office,mobile,other,line,ring,group
 ```
@@ -95,48 +80,23 @@ Regeln:
 - Mindestens eine Nummer aus `office`, `mobile`, `other` ist Pflicht
 
 ## Entwicklung
-### Lokal starten
 ```bash
 python -m venv .venv
-# Windows PowerShell:
-.venv\Scripts\Activate.ps1
+# Linux/macOS
+source .venv/bin/activate
+# Windows PowerShell
+# .venv\Scripts\Activate.ps1
 pip install -r requirements.txt -r requirements-dev.txt
 python -m app.main
 ```
 
-### Tests ausführen
+Tests ausfuehren:
 ```bash
-pytest -q
+python -m pytest -q
 ```
 
-## GitHub + Versionierung (SemVer)
-Dieses Projekt ist auf Semantic Versioning 2.0.0 ausgelegt: [https://semver.org/spec/v2.0.0.html](https://semver.org/spec/v2.0.0.html)
-
-Release-Ablauf:
-1. `CHANGELOG.md` aktualisieren
-2. Tag im Format `vMAJOR.MINOR.PATCH` setzen und pushen
-3. GitHub Action validiert den Tag
-4. Docker-Image wird nach GHCR veröffentlicht:
-   - `ghcr.io/<owner>/<repo>:vMAJOR.MINOR.PATCH`
-   - `ghcr.io/<owner>/<repo>:latest`
-
-Beispiel:
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-## Öffentliches GitHub-Repo erstellen
-```bash
-git init
-git add .
-git commit -m "feat: initial release"
-git branch -M main
-git remote add origin https://github.com/<owner>/<repo>.git
-git push -u origin main
-```
-
-Danach in den GitHub-Repo-Einstellungen auf `Public` stellen.
+## Versionierung
+Semantic Versioning 2.0.0: [https://semver.org/spec/v2.0.0.html](https://semver.org/spec/v2.0.0.html)
 
 ## Changelog
 Siehe [CHANGELOG.md](CHANGELOG.md).

@@ -1,30 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
-  <h2 class="h4 mb-0">User Management</h2>
-  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">Back</a>
+  <h2 class="h4 mb-0">{{ tr('user_management') }}</h2>
+  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">{{ tr('back') }}</a>
 </div>
 
 <div class="row g-4">
   <div class="col-lg-5">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h5 class="card-title">Create User</h5>
+        <h5 class="card-title">{{ tr('create_user') }}</h5>
         <form method="post" action="{{ url_for('web.create_user') }}" class="row g-2">
-          <div class="col-12"><input class="form-control" name="username" placeholder="Username" required></div>
-          <div class="col-12"><input class="form-control" name="password" type="password" placeholder="Web Password" required></div>
+          <div class="col-12"><input class="form-control" name="username" placeholder="{{ tr('username') }}" required></div>
+          <div class="col-12"><input class="form-control" name="password" type="password" placeholder="{{ tr('web_password') }}" required></div>
           <div class="col-12 form-check ms-1">
             <input class="form-check-input" type="checkbox" name="is_admin" id="is_admin">
-            <label class="form-check-label" for="is_admin">Administrator</label>
+            <label class="form-check-label" for="is_admin">{{ tr('administrator') }}</label>
           </div>
-          <hr class="my-2">
-          <div class="col-12 form-check ms-1">
-            <input class="form-check-input" type="checkbox" name="ftp_enabled" id="ftp_enabled">
-            <label class="form-check-label" for="ftp_enabled">Enable FTP account</label>
-          </div>
-          <div class="col-12"><input class="form-control" name="ftp_username" placeholder="FTP Username"></div>
-          <div class="col-12"><input class="form-control" name="ftp_password" type="password" placeholder="FTP Password"></div>
-          <div class="col-12"><button class="btn btn-primary" type="submit">Create</button></div>
+          <div class="col-12"><button class="btn btn-primary" type="submit">{{ tr('create') }}</button></div>
         </form>
       </div>
     </div>
@@ -33,19 +26,18 @@
   <div class="col-lg-7">
     <div class="card shadow-sm">
       <div class="card-body">
-        <h5 class="card-title">Users</h5>
+        <h5 class="card-title">{{ tr('users') }}</h5>
         <div class="table-responsive">
           <table class="table table-sm align-middle">
-            <thead><tr><th>Username</th><th>Role</th><th>FTP</th><th></th></tr></thead>
+            <thead><tr><th>{{ tr('username') }}</th><th>{{ tr('role') }}</th><th></th></tr></thead>
             <tbody>
               {% for user in users %}
               <tr>
                 <td>{{ user.username }}</td>
-                <td>{% if user.is_admin %}Admin{% else %}User{% endif %}</td>
-                <td>{% if user.ftp_enabled %}{{ user.ftp_username }}{% else %}-{% endif %}</td>
+                <td>{% if user.is_admin %}{{ tr('admin') }}{% else %}{{ tr('user') }}{% endif %}</td>
                 <td class="text-end">
                   <form method="post" action="{{ url_for('web.delete_user', user_id=user.id) }}">
-                    <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+                    <button class="btn btn-outline-danger btn-sm" type="submit">{{ tr('delete') }}</button>
                   </form>
                 </td>
               </tr>

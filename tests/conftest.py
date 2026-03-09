@@ -23,6 +23,8 @@ def app():
             "SECRET_KEY": "test-secret",
             "ADMIN_USERNAME": "admin",
             "ADMIN_PASSWORD": "admin123",
+            "ACCESS_DEFAULT_USERNAME": "apiuser",
+            "ACCESS_DEFAULT_PASSWORD": "apipass",
         }
     )
 
