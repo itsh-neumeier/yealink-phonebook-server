@@ -48,6 +48,7 @@
         {% if g.user.is_admin %}
         <a class="btn btn-sm btn-outline-primary" href="{{ url_for('web.users') }}">{{ tr('users') }}</a>
         <a class="btn btn-sm btn-outline-primary" href="{{ url_for('web.access_credentials') }}">{{ tr('access_list') }}</a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('web.sync_profiles') }}">{{ tr('sync_profiles') }}</a>
         {% endif %}
         <form method="post" action="{{ url_for('web.logout') }}" class="mb-0">
           <button class="btn btn-sm btn-outline-danger" type="submit">{{ tr('logout') }}</button>
@@ -88,6 +89,7 @@
       {% if g.user and g.user.is_admin %}
       <a class="btn btn-outline-primary" href="{{ url_for('web.users') }}">{{ tr('users') }}</a>
       <a class="btn btn-outline-primary" href="{{ url_for('web.access_credentials') }}">{{ tr('access_list') }}</a>
+      <a class="btn btn-outline-primary" href="{{ url_for('web.sync_profiles') }}">{{ tr('sync_profiles') }}</a>
       {% endif %}
       {% if g.user %}
       <form method="post" action="{{ url_for('web.logout') }}" class="mb-0">

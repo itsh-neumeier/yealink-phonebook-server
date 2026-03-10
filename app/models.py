@@ -34,6 +34,12 @@ class Phonebook(db.Model):
         uselist=False,
         cascade="all, delete-orphan",
     )
+    sync_profiles = db.relationship(
+        "SyncProfile",
+        backref="phonebook",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
+    )
 
 
 class PhonebookSettings(db.Model):
@@ -116,4 +122,34 @@ class AccessCredentialPhonebook(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint("credential_id", "phonebook_id", name="uq_access_credential_phonebook"),
+    )
+
+
+class SyncProfile(db.Model):
+    __tablename__ = "sync_profiles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    phonebook_id = db.Column(db.Integer, db.ForeignKey("phonebooks.id"), nullable=False)
+    phone_host = db.Column(db.String(255), nullable=False)
+    web_username = db.Column(db.String(80), nullable=False)
+    web_password_enc = db.Column(db.Text, nullable=False)
+    verify_tls = db.Column(db.Boolean, default=False, nullable=False)
+    interval_minutes = db.Column(db.Integer, default=60, nullable=False)
+    enabled = db.Column(db.Boolean, default=True, nullable=False)
+    last_run_at = db.Column(db.DateTime, nullable=True)
+    last_status = db.Column(db.String(20), nullable=True)
+    last_message = db.Column(db.String(255), nullable=True)
+    next_run_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False,
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("phonebook_id", "phone_host", name="uq_sync_phonebook_host"),
+        db.CheckConstraint("interval_minutes >= 1", name="ck_sync_interval_minutes_positive"),
     )

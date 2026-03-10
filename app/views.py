@@ -1,5 +1,6 @@
 import os
 import tempfile
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -28,9 +29,11 @@ from .models import (
     ContactEntry,
     Phonebook,
     PhonebookSettings,
+    SyncProfile,
     User,
     db,
 )
+from .sync_service import create_sync_profile, run_profile_sync, update_sync_profile
 from .services import (
     export_phonebook_csv,
     export_phonebook_xml,
@@ -231,6 +234,130 @@ def update_access_credential_phonebooks(credential_id: int):
     db.session.commit()
     flash(translate(g.lang, "permissions_updated"), "success")
     return redirect(url_for("web.access_credentials"))
+
+
+@web.route("/sync-profiles")
+@admin_required
+def sync_profiles():
+    profiles = SyncProfile.query.order_by(SyncProfile.created_at.desc()).all()
+    phonebooks = Phonebook.query.order_by(Phonebook.name.asc()).all()
+    return render_template("sync_profiles.html", profiles=profiles, phonebooks=phonebooks)
+
+
+@web.route("/sync-profiles", methods=["POST"])
+@admin_required
+def create_sync_profile_view():
+    name = (request.form.get("name") or "").strip()
+    try:
+        phonebook_id = int(request.form.get("phonebook_id") or "0")
+        interval_minutes = int(request.form.get("interval_minutes") or "60")
+    except ValueError:
+        flash(translate(g.lang, "sync_profile_required"), "danger")
+        return redirect(url_for("web.sync_profiles"))
+    phone_host = (request.form.get("phone_host") or "").strip()
+    web_username = (request.form.get("web_username") or "").strip()
+    web_password = (request.form.get("web_password") or "").strip()
+    verify_tls = request.form.get("verify_tls") == "on"
+    enabled = request.form.get("enabled") == "on"
+
+    if not all([name, phonebook_id, phone_host, web_username, web_password]):
+        flash(translate(g.lang, "sync_profile_required"), "danger")
+        return redirect(url_for("web.sync_profiles"))
+
+    try:
+        create_sync_profile(
+            name=name,
+            phonebook_id=phonebook_id,
+            phone_host=phone_host,
+            web_username=web_username,
+            web_password=web_password,
+            verify_tls=verify_tls,
+            interval_minutes=interval_minutes,
+            enabled=enabled,
+        )
+    except Exception as exc:
+        flash(str(exc), "danger")
+        return redirect(url_for("web.sync_profiles"))
+
+    flash(translate(g.lang, "sync_profile_created"), "success")
+    return redirect(url_for("web.sync_profiles"))
+
+
+@web.route("/sync-profiles/<int:profile_id>/edit", methods=["POST"])
+@admin_required
+def edit_sync_profile_view(profile_id: int):
+    profile = SyncProfile.query.get_or_404(profile_id)
+    name = (request.form.get("name") or "").strip()
+    try:
+        phonebook_id = int(request.form.get("phonebook_id") or "0")
+        interval_minutes = int(request.form.get("interval_minutes") or "60")
+    except ValueError:
+        flash(translate(g.lang, "sync_profile_required"), "danger")
+        return redirect(url_for("web.sync_profiles"))
+    phone_host = (request.form.get("phone_host") or "").strip()
+    web_username = (request.form.get("web_username") or "").strip()
+    web_password = (request.form.get("web_password") or "").strip() or None
+    verify_tls = request.form.get("verify_tls") == "on"
+    enabled = request.form.get("enabled") == "on"
+
+    if not all([name, phonebook_id, phone_host, web_username]):
+        flash(translate(g.lang, "sync_profile_required"), "danger")
+        return redirect(url_for("web.sync_profiles"))
+
+    try:
+        update_sync_profile(
+            profile,
+            name=name,
+            phonebook_id=phonebook_id,
+            phone_host=phone_host,
+            web_username=web_username,
+            web_password=web_password,
+            verify_tls=verify_tls,
+            interval_minutes=interval_minutes,
+            enabled=enabled,
+        )
+    except Exception as exc:
+        flash(str(exc), "danger")
+        return redirect(url_for("web.sync_profiles"))
+
+    flash(translate(g.lang, "sync_profile_updated"), "success")
+    return redirect(url_for("web.sync_profiles"))
+
+
+@web.route("/sync-profiles/<int:profile_id>/run", methods=["POST"])
+@admin_required
+def run_sync_profile_view(profile_id: int):
+    profile = SyncProfile.query.get_or_404(profile_id)
+    try:
+        imported = run_profile_sync(profile)
+        flash(translate(g.lang, "sync_profile_ran", count=imported), "success")
+    except Exception as exc:
+        flash(f"{translate(g.lang, 'sync_profile_failed')}: {exc}", "danger")
+    return redirect(url_for("web.sync_profiles"))
+
+
+@web.route("/sync-profiles/<int:profile_id>/toggle", methods=["POST"])
+@admin_required
+def toggle_sync_profile_view(profile_id: int):
+    profile = SyncProfile.query.get_or_404(profile_id)
+    profile.enabled = not profile.enabled
+    if profile.enabled:
+        profile.next_run_at = _next_run(profile.interval_minutes)
+    else:
+        profile.next_run_at = None
+    db.session.commit()
+    flash(translate(g.lang, "sync_profile_updated"), "success")
+    return redirect(url_for("web.sync_profiles"))
+
+
+@web.route("/sync-profiles/<int:profile_id>/delete", methods=["POST"])
+@admin_required
+def delete_sync_profile_view(profile_id: int):
+    profile = SyncProfile.query.get_or_404(profile_id)
+    db.session.delete(profile)
+    db.session.commit()
+    flash(translate(g.lang, "sync_profile_deleted"), "success")
+    return redirect(url_for("web.sync_profiles"))
 
 
 @web.route("/users/<int:user_id>/delete", methods=["POST"])
@@ -685,6 +812,10 @@ def _set_credential_permissions(credential_id: int, phonebook_ids: list[str]) ->
                     phonebook_id=phonebook_id,
                 )
             )
+
+
+def _next_run(interval_minutes: int) -> datetime:
+    return datetime.utcnow() + timedelta(minutes=max(1, int(interval_minutes)))
 
 
 def _token_serializer() -> URLSafeTimedSerializer:

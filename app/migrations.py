@@ -5,7 +5,7 @@ from sqlalchemy import text
 from .models import db
 
 
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
 
 
 def migrate_database() -> None:
@@ -27,6 +27,8 @@ def migrate_database() -> None:
             _migrate_v2_to_v3()
         elif version == 3:
             _migrate_v3_to_v4()
+        elif version == 4:
+            _migrate_v4_to_v5()
         version += 1
 
 
@@ -102,6 +104,43 @@ def _migrate_v3_to_v4() -> None:
     with db.engine.begin() as conn:
         # Reserved compatibility step for previously released schema version 4.
         _write_schema_version(conn, 4)
+
+
+def _migrate_v4_to_v5() -> None:
+    with db.engine.begin() as conn:
+        conn.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS sync_profiles (
+                  id INTEGER PRIMARY KEY,
+                  name VARCHAR(120) NOT NULL,
+                  phonebook_id INTEGER NOT NULL,
+                  phone_host VARCHAR(255) NOT NULL,
+                  web_username VARCHAR(80) NOT NULL,
+                  web_password_enc TEXT NOT NULL,
+                  verify_tls BOOLEAN NOT NULL DEFAULT 0,
+                  interval_minutes INTEGER NOT NULL DEFAULT 60,
+                  enabled BOOLEAN NOT NULL DEFAULT 1,
+                  last_run_at DATETIME,
+                  last_status VARCHAR(20),
+                  last_message VARCHAR(255),
+                  next_run_at DATETIME,
+                  created_at DATETIME NOT NULL,
+                  updated_at DATETIME NOT NULL,
+                  FOREIGN KEY(phonebook_id) REFERENCES phonebooks(id) ON DELETE CASCADE
+                )
+                """
+            )
+        )
+        conn.execute(
+            text(
+                """
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_sync_phonebook_host
+                ON sync_profiles(phonebook_id, phone_host)
+                """
+            )
+        )
+        _write_schema_version(conn, 5)
 
 
 def _grant_existing_credentials_all_phonebooks(conn) -> None:

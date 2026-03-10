@@ -11,6 +11,7 @@ Dockerized Flask application for Yealink phonebook provisioning over HTTP.
 - Add, edit, and delete contacts
 - Import/export CSV
 - Import/export Yealink XML
+- AX86R local phonebook import (manual + scheduled device sync)
 - HTTP provisioning endpoint per phonebook: `/<slug>.xml`
 - Safe phonebook deletion with slug confirmation
 - Web authentication with admin user management
@@ -27,6 +28,7 @@ Dockerized Flask application for Yealink phonebook provisioning over HTTP.
 - Non-root container user
 - Automatic startup database migrations for persistent volume compatibility
 - `PUID`/`PGID` support for bind-mounted host volumes
+- Saved AX86R web credentials are stored encrypted at rest (derived from `SECRET_KEY`)
 
 ## Quick Start (Docker)
 Example `docker-compose.yml`:
@@ -72,6 +74,16 @@ Default bootstrap credential env vars:
 - `ACCESS_DEFAULT_PASSWORD`
 
 Additional credentials are managed in the Access List admin page in the header.
+
+## AX86R Local Phonebook Sync
+1. Open `Device Sync` (admin menu).
+2. Create a device link with AX86R IP/host, Yealink web login and target YeaBook phonebook.
+3. Set an interval in minutes and enable the profile.
+4. Use `Run now` for immediate import.
+
+Behavior:
+- Import replaces all existing entries in the linked local phonebook on each run.
+- Contact photos/ringtones from local AX86R records are ignored and removed from YeaBook import state.
 
 ## Bind Mount Permissions
 If you use a host path (`./data:/data` or `/docker-volumes/...:/data`), the mounted folder must be writable by the container user.

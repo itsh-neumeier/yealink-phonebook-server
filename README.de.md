@@ -11,6 +11,7 @@ Dockerisierte Flask-Anwendung fuer Yealink-Telefonbuch-Provisionierung ueber HTT
 - Kontakte anlegen, bearbeiten und loeschen
 - CSV Import/Export
 - Yealink XML Import/Export
+- AX86R Local-Telefonbuch Import (manuell + geplanter Geräte-Sync)
 - HTTP Provisioning Endpoint pro Telefonbuch: `/<slug>.xml`
 - Sicheres Loeschen von Telefonbuechern mit Slug-Bestaetigung
 - Web-Authentifizierung mit Admin-Benutzerverwaltung
@@ -27,6 +28,7 @@ Dockerisierte Flask-Anwendung fuer Yealink-Telefonbuch-Provisionierung ueber HTT
 - Container laeuft als Nicht-Root-Benutzer
 - Automatische Datenbank-Migrationen beim Start fuer persistente Volume-Kompatibilitaet
 - `PUID`/`PGID` Unterstuetzung fuer Bind-Mount Host-Volumes
+- Gespeicherte AX86R-Web-Zugangsdaten werden verschluesselt abgelegt (abgeleitet aus `SECRET_KEY`)
 
 ## Schnellstart (Docker)
 Beispiel `docker-compose.yml`:
@@ -72,6 +74,16 @@ Default Bootstrap-Zugangsdaten per Env:
 - `ACCESS_DEFAULT_PASSWORD`
 
 Weitere Zugangsdaten werden in der Access-Liste im Header verwaltet.
+
+## AX86R Local-Telefonbuch Sync
+1. `Geräte-Sync` im Admin-Menü öffnen.
+2. Geräte-Verknüpfung mit AX86R IP/Host, Yealink-Weblogin und Ziel-Telefonbuch anlegen.
+3. Intervall in Minuten setzen und Profil aktivieren.
+4. Für Sofortlauf `Jetzt ausführen` verwenden.
+
+Verhalten:
+- Beim Import werden bestehende Einträge im verknüpften lokalen Telefonbuch immer komplett ersetzt.
+- Kontaktfotos/Klingeltöne aus AX86R Local Contacts werden im YeaBook-Importzustand ignoriert und entfernt.
 
 ## Bind-Mount Berechtigungen
 Wenn ein Host-Pfad gemountet wird (`./data:/data` oder `/docker-volumes/...:/data`), muss der Ordner fuer den Container-Benutzer beschreibbar sein.

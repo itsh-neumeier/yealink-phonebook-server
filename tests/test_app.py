@@ -6,7 +6,7 @@ from pathlib import Path
 
 from app import create_app
 from app.models import AccessCredentialPhonebook, PhonebookSettings, db
-from app.models import User
+from app.models import ContactEntry, SyncProfile, User
 
 
 def auth_headers(username="apiuser", password="apipass"):
@@ -271,6 +271,66 @@ def test_phonebook_delete_requires_slug_confirmation(client):
     )
     assert ok.status_code == 200
     assert b"Phonebook deleted." in ok.data
+
+
+def test_device_sync_profile_create_and_run(client, app, monkeypatch):
+    client.post(
+        "/login",
+        data={"username": "admin", "password": "admin123"},
+        follow_redirects=True,
+    )
+    client.post("/phonebooks", data={"name": "Device Sync Book"}, follow_redirects=True)
+    client.post(
+        "/phonebooks/1/entries",
+        data={"name": "Old Contact", "office": "1000"},
+        follow_redirects=True,
+    )
+
+    create_resp = client.post(
+        "/sync-profiles",
+        data={
+            "name": "AX86R Office",
+            "phonebook_id": "1",
+            "phone_host": "192.168.90.22",
+            "web_username": "admin",
+            "web_password": "secret",
+            "interval_minutes": "30",
+            "enabled": "on",
+        },
+        follow_redirects=True,
+    )
+    assert create_resp.status_code == 200
+    assert b"Device link created." in create_resp.data
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            pass
+
+        def fetch_local_contacts(self):
+            return [
+                {
+                    "name": "Alice Remote",
+                    "office": "1111",
+                    "mobile": "2222",
+                    "other": None,
+                    "line": "1",
+                    "group": "All Contacts",
+                }
+            ]
+
+    monkeypatch.setattr("app.sync_service.YealinkAX86RClient", FakeClient)
+
+    run_resp = client.post("/sync-profiles/1/run", follow_redirects=True)
+    assert run_resp.status_code == 200
+    assert b"Sync completed. Imported 1 contacts." in run_resp.data
+
+    with app.app_context():
+        profile = SyncProfile.query.get(1)
+        assert profile is not None
+        assert profile.last_status == "ok"
+        entries = ContactEntry.query.filter_by(phonebook_id=1).all()
+        assert len(entries) == 1
+        assert entries[0].name == "Alice Remote"
 
 
 def test_startup_migrates_legacy_volume_schema():

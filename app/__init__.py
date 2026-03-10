@@ -5,6 +5,7 @@ from flask import Flask
 
 from .migrations import migrate_database
 from .models import AccessCredential, User, db
+from .sync_scheduler import start_sync_scheduler
 from .views import web
 
 
@@ -27,6 +28,9 @@ def create_app(test_config: dict | None = None) -> Flask:
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=os.environ.get("SESSION_COOKIE_SECURE", "false").lower()
         == "true",
+        SYNC_SCHEDULER_POLL_SECONDS=int(os.environ.get("SYNC_SCHEDULER_POLL_SECONDS", "30")),
+        DISABLE_SYNC_SCHEDULER=os.environ.get("DISABLE_SYNC_SCHEDULER", "false").lower()
+        == "true",
     )
 
     if test_config:
@@ -44,6 +48,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         bootstrap_access_credential(app)
 
     app.register_blueprint(web)
+    start_sync_scheduler(app)
 
     return app
 

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h2 class="h4 mb-0">{{ tr('sync_profiles') }}</h2>
+  <a class="btn btn-outline-primary" href="{{ url_for('web.index') }}">{{ tr('back') }}</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-xl-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">{{ tr('sync_profile_create') }}</h5>
+        <form method="post" action="{{ url_for('web.create_sync_profile_view') }}" class="row g-2">
+          <div class="col-12"><input class="form-control" name="name" placeholder="{{ tr('name') }}" required /></div>
+          <div class="col-12">
+            <select class="form-select" name="phonebook_id" required>
+              <option value="">{{ tr('allowed_phonebooks') }}</option>
+              {% for pb in phonebooks %}
+                <option value="{{ pb.id }}">{{ pb.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12"><input class="form-control" name="phone_host" placeholder="https://192.168.90.22" required /></div>
+          <div class="col-12"><input class="form-control" name="web_username" placeholder="{{ tr('username') }}" required /></div>
+          <div class="col-12"><input class="form-control" type="password" name="web_password" placeholder="{{ tr('password') }}" required /></div>
+          <div class="col-12"><input class="form-control" type="number" min="1" name="interval_minutes" value="60" required /></div>
+          <div class="col-12 form-check ms-1">
+            <input class="form-check-input" type="checkbox" id="verify_tls" name="verify_tls">
+            <label class="form-check-label" for="verify_tls">{{ tr('sync_verify_tls') }}</label>
+          </div>
+          <div class="col-12 form-check ms-1">
+            <input class="form-check-input" type="checkbox" id="sync_enabled" name="enabled" checked>
+            <label class="form-check-label" for="sync_enabled">{{ tr('active') }}</label>
+          </div>
+          <div class="col-12"><button class="btn btn-primary" type="submit">{{ tr('create') }}</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-8">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">{{ tr('sync_profiles') }}</h5>
+        {% if profiles %}
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead>
+                <tr>
+                  <th>{{ tr('name') }}</th>
+                  <th>Host</th>
+                  <th>{{ tr('allowed_phonebooks') }}</th>
+                  <th>{{ tr('active') }}</th>
+                  <th>{{ tr('entries') }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for profile in profiles %}
+                  <tr>
+                    <td>{{ profile.name }}</td>
+                    <td><code>{{ profile.phone_host }}</code></td>
+                    <td>{{ profile.phonebook.name if profile.phonebook else '-' }}</td>
+                    <td>
+                      {% if profile.enabled %}
+                        <span class="badge text-bg-success">{{ tr('active') }}</span>
+                      {% else %}
+                        <span class="badge text-bg-secondary">{{ tr('inactive') }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if profile.last_status == 'ok' %}
+                        <span class="small text-success">{{ profile.last_message }}</span>
+                      {% elif profile.last_status == 'error' %}
+                        <span class="small text-danger">{{ profile.last_message }}</span>
+                      {% else %}
+                        <span class="small text-muted">-</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-end">
+                      <form class="d-inline" method="post" action="{{ url_for('web.run_sync_profile_view', profile_id=profile.id) }}">
+                        <button class="btn btn-outline-success btn-sm" type="submit">{{ tr('sync_run_now') }}</button>
+                      </form>
+                      <form class="d-inline" method="post" action="{{ url_for('web.toggle_sync_profile_view', profile_id=profile.id) }}">
+                        <button class="btn btn-outline-primary btn-sm" type="submit">
+                          {% if profile.enabled %}{{ tr('deactivate') }}{% else %}{{ tr('activate') }}{% endif %}
+                        </button>
+                      </form>
+                      <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-sync-{{ profile.id }}">{{ tr('edit') }}</button>
+                      <form class="d-inline" method="post" action="{{ url_for('web.delete_sync_profile_view', profile_id=profile.id) }}">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">{{ tr('delete') }}</button>
+                      </form>
+                    </td>
+                  </tr>
+                  <tr class="collapse" id="edit-sync-{{ profile.id }}">
+                    <td colspan="6">
+                      <form method="post" action="{{ url_for('web.edit_sync_profile_view', profile_id=profile.id) }}" class="row g-2">
+                        <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ profile.name }}" required /></div>
+                        <div class="col-md-4">
+                          <select class="form-select form-select-sm" name="phonebook_id" required>
+                            {% for pb in phonebooks %}
+                              <option value="{{ pb.id }}" {% if pb.id == profile.phonebook_id %}selected{% endif %}>{{ pb.name }}</option>
+                            {% endfor %}
+                          </select>
+                        </div>
+                        <div class="col-md-4"><input class="form-control form-control-sm" name="phone_host" value="{{ profile.phone_host }}" required /></div>
+                        <div class="col-md-3"><input class="form-control form-control-sm" name="web_username" value="{{ profile.web_username }}" required /></div>
+                        <div class="col-md-3"><input class="form-control form-control-sm" type="password" name="web_password" placeholder="{{ tr('sync_keep_password_hint') }}" /></div>
+                        <div class="col-md-2"><input class="form-control form-control-sm" type="number" min="1" name="interval_minutes" value="{{ profile.interval_minutes }}" required /></div>
+                        <div class="col-md-2 form-check mt-2">
+                          <input class="form-check-input" type="checkbox" name="verify_tls" id="verify-tls-{{ profile.id }}" {% if profile.verify_tls %}checked{% endif %} />
+                          <label class="form-check-label" for="verify-tls-{{ profile.id }}">TLS</label>
+                        </div>
+                        <div class="col-md-2 form-check mt-2">
+                          <input class="form-check-input" type="checkbox" name="enabled" id="enabled-{{ profile.id }}" {% if profile.enabled %}checked{% endif %} />
+                          <label class="form-check-label" for="enabled-{{ profile.id }}">{{ tr('active') }}</label>
+                        </div>
+                        <div class="col-md-12 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
+                      </form>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">{{ tr('sync_profiles_empty') }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
