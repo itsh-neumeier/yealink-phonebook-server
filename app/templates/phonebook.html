@@ -81,11 +81,14 @@
           <div class="col-12"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
           <div class="col-12"><input class="form-control" list="ringtoneOptions" name="ring" placeholder="{{ tr('ringtone') }}"></div>
           <div class="col-12">
-            <select class="form-select" name="photo">
+            <select class="form-select photo-select" name="photo" data-preview-id="photo-preview-create">
               {% for photo_value, photo_label in photo_options.items() %}
-                <option value="{{ photo_value }}">{{ photo_label }}</option>
+                <option value="{{ photo_value }}" data-preview="{{ url_for('static', filename=photo_preview[photo_value]) if photo_preview[photo_value] else '' }}">{{ photo_label }}</option>
               {% endfor %}
             </select>
+          </div>
+          <div class="col-12">
+            <img id="photo-preview-create" class="contact-photo-preview d-none" alt="Photo preview" />
           </div>
           {% if category == 'business' %}
           <div class="col-12"><input class="form-control" name="group" placeholder="{{ tr('department') }}"></div>
@@ -126,7 +129,14 @@
                         <td>{{ entry.mobile or '' }}</td>
                         <td>{{ entry.other or '' }}</td>
                         <td>{{ entry.ring or '' }}</td>
-                        <td>{{ photo_options.get(entry.photo or '', '-') }}</td>
+                        <td>
+                          {% set p = photo_preview.get(entry.photo or '') %}
+                          {% if p %}
+                            <img class="contact-photo-chip" src="{{ url_for('static', filename=p) }}" alt="{{ photo_options.get(entry.photo or '', '-') }}" />
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
                         <td>{{ entry.group or '' }}</td>
                         <td class="text-end">
                           <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-{{ entry.id }}">{{ tr('edit') }}</button>
@@ -145,11 +155,15 @@
                             <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" list="ringtoneOptions" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ringtone') }}"></div>
                             <div class="col-md-4">
-                              <select class="form-select form-select-sm" name="photo">
+                              <select class="form-select form-select-sm photo-select" name="photo" data-preview-id="photo-preview-edit-{{ entry.id }}">
                                 {% for photo_value, photo_label in photo_options.items() %}
-                                  <option value="{{ photo_value }}" {% if (entry.photo or '') == photo_value %}selected{% endif %}>{{ photo_label }}</option>
+                                  <option value="{{ photo_value }}" data-preview="{{ url_for('static', filename=photo_preview[photo_value]) if photo_preview[photo_value] else '' }}" {% if (entry.photo or '') == photo_value %}selected{% endif %}>{{ photo_label }}</option>
                                 {% endfor %}
                               </select>
+                            </div>
+                            <div class="col-md-2">
+                              {% set ep = photo_preview.get(entry.photo or '') %}
+                              <img id="photo-preview-edit-{{ entry.id }}" class="contact-photo-preview form-photo-preview {% if not ep %}d-none{% endif %}" {% if ep %}src="{{ url_for('static', filename=ep) }}"{% endif %} alt="Photo preview" />
                             </div>
                             <div class="col-md-8"><input class="form-control form-control-sm" name="group" value="{{ entry.group or '' }}" placeholder="{{ tr('department') }}"></div>
                             <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
@@ -166,7 +180,14 @@
                       <td>{{ entry.mobile or '' }}</td>
                       <td>{{ entry.other or '' }}</td>
                       <td>{{ entry.ring or '' }}</td>
-                      <td>{{ photo_options.get(entry.photo or '', '-') }}</td>
+                      <td>
+                        {% set p = photo_preview.get(entry.photo or '') %}
+                        {% if p %}
+                          <img class="contact-photo-chip" src="{{ url_for('static', filename=p) }}" alt="{{ photo_options.get(entry.photo or '', '-') }}" />
+                        {% else %}
+                          -
+                        {% endif %}
+                      </td>
                       <td class="text-end">
                         <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-{{ entry.id }}">{{ tr('edit') }}</button>
                         <form method="post" action="{{ url_for('web.delete_entry', entry_id=entry.id) }}" class="d-inline">
@@ -184,11 +205,15 @@
                           <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" list="ringtoneOptions" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ringtone') }}"></div>
                           <div class="col-md-4">
-                            <select class="form-select form-select-sm" name="photo">
+                            <select class="form-select form-select-sm photo-select" name="photo" data-preview-id="photo-preview-edit-{{ entry.id }}">
                               {% for photo_value, photo_label in photo_options.items() %}
-                                <option value="{{ photo_value }}" {% if (entry.photo or '') == photo_value %}selected{% endif %}>{{ photo_label }}</option>
+                                <option value="{{ photo_value }}" data-preview="{{ url_for('static', filename=photo_preview[photo_value]) if photo_preview[photo_value] else '' }}" {% if (entry.photo or '') == photo_value %}selected{% endif %}>{{ photo_label }}</option>
                               {% endfor %}
                             </select>
+                          </div>
+                          <div class="col-md-2">
+                            {% set ep = photo_preview.get(entry.photo or '') %}
+                            <img id="photo-preview-edit-{{ entry.id }}" class="contact-photo-preview form-photo-preview {% if not ep %}d-none{% endif %}" {% if ep %}src="{{ url_for('static', filename=ep) }}"{% endif %} alt="Photo preview" />
                           </div>
                           <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                         </form>
@@ -226,4 +251,28 @@
     </div>
   </div>
 </div>
+<script>
+  (() => {
+    const updatePreview = (select) => {
+      const targetId = select.dataset.previewId;
+      if (!targetId) return;
+      const img = document.getElementById(targetId);
+      if (!img) return;
+      const option = select.options[select.selectedIndex];
+      const src = option ? option.dataset.preview || "" : "";
+      if (!src) {
+        img.classList.add("d-none");
+        img.removeAttribute("src");
+        return;
+      }
+      img.src = src;
+      img.classList.remove("d-none");
+    };
+
+    document.querySelectorAll(".photo-select").forEach((select) => {
+      select.addEventListener("change", () => updatePreview(select));
+      updatePreview(select);
+    });
+  })();
+</script>
 {% endblock %}

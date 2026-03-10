@@ -28,6 +28,13 @@ YEALINK_STANDARD_PHOTO_OPTIONS = {
     "System:icon_friend_b.png": "Friend",
     "System:icon_blacklist_b.png": "Blacklist",
 }
+YEALINK_STANDARD_PHOTO_PREVIEW = {
+    "": None,
+    "Default:default_contact_image.png": "yealink-photos/default_contact_image.png",
+    "System:icon_family_b.png": "yealink-photos/icon_family_b.png",
+    "System:icon_friend_b.png": "yealink-photos/icon_friend_b.png",
+    "System:icon_blacklist_b.png": "yealink-photos/icon_blacklist_b.png",
+}
 
 
 def slugify(value: str) -> str:

@@ -61,3 +61,25 @@ code {
 .group-row > td {
   background: var(--group-row-bg);
 }
+
+.contact-photo-chip {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--bs-body-color) 20%, transparent);
+  background: color-mix(in oklab, var(--bs-body-bg) 90%, transparent);
+}
+
+.contact-photo-preview {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 1px solid color-mix(in oklab, var(--bs-body-color) 20%, transparent);
+  background: color-mix(in oklab, var(--bs-body-bg) 90%, transparent);
+}
+
+.form-photo-preview {
+  margin-top: 2px;
+}

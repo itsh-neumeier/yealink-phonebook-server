@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 
 from flask import Flask
@@ -35,6 +36,8 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     if test_config:
         app.config.update(test_config)
+
+    _migrate_legacy_sqlite_if_needed(app)
 
     os.makedirs(app.instance_path, exist_ok=True)
     os.makedirs(app.config["EXPORT_DIR"], exist_ok=True)
@@ -74,3 +77,19 @@ def bootstrap_access_credential(app: Flask) -> None:
     cred.set_password(app.config["ACCESS_DEFAULT_PASSWORD"])
     db.session.add(cred)
     db.session.commit()
+
+
+def _migrate_legacy_sqlite_if_needed(app: Flask) -> None:
+    db_url = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    prefix = "sqlite:///"
+    if not isinstance(db_url, str) or not db_url.startswith(prefix):
+        return
+
+    target_path = Path(db_url[len(prefix) :])
+    legacy_path = Path(app.instance_path, "phonebooks.db")
+
+    if target_path.exists() or not legacy_path.exists():
+        return
+
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(legacy_path, target_path)

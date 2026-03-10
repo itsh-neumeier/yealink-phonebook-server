@@ -37,6 +37,7 @@ from .sync_service import create_sync_profile, run_profile_sync, update_sync_pro
 from .services import (
     RINGTONE_OPTIONS,
     YEALINK_STANDARD_PHOTO_OPTIONS,
+    YEALINK_STANDARD_PHOTO_PREVIEW,
     export_phonebook_csv,
     export_phonebook_xml,
     import_phonebook_csv,
@@ -489,6 +490,7 @@ def view_phonebook(phonebook_id: int):
         provisioning_url_with_auth=provisioning_url_with_auth,
         ringtone_options=RINGTONE_OPTIONS,
         photo_options=YEALINK_STANDARD_PHOTO_OPTIONS,
+        photo_preview=YEALINK_STANDARD_PHOTO_PREVIEW,
     )
 
 

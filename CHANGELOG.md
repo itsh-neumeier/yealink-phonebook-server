@@ -7,6 +7,12 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ### Changed
 - Auto-update CHANGELOG.
 
+## [0.3.3] - 2026-03-10
+### Added
+- Show Yealink standard photo PNG previews in contact forms and entry rows.
+### Fixed
+- Auto-migrate legacy SQLite file from `/app/instance/phonebooks.db` to `/data/phonebooks.db` on first startup after upgrade.
+
 ## [0.3.2] - 2026-03-10
 ### Added
 - Re-add ringtone and standard photo presets.
