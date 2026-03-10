@@ -5,7 +5,7 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
 ### Changed
-- No unreleased changes yet.
+- Auto-update CHANGELOG.
 
 ## [0.3.3] - 2026-03-10
 ### Changed
