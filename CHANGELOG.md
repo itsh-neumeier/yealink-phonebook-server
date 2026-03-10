@@ -4,7 +4,10 @@ All notable changes to this project are documented in this file.
 The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
+### Added
+- Add AX86R local phonebook import profiles.
 ### Changed
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 
 ## [0.2.10] - 2026-03-09
@@ -12,14 +15,9 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 - Prepare v0.2.10 changelog.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
+- Auto-update CHANGELOG.
 ### Fixed
 - Support bind mounts via PUID/PGID entrypoint.
-
-## [0.3.0] - 2026-03-10
-### Added
-- Add AX86R local-phonebook device sync profiles with stored credentials and scheduled imports.
-### Fixed
-- Replace local phonebook entries on sync import to keep linked books clean and deterministic.
 
 ## [0.2.9] - 2026-03-09
 ### Changed
