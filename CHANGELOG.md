@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
+### Changed
+- Auto-update CHANGELOG.
+
+## [0.3.0] - 2026-03-10
 ### Added
 - Add AX86R local phonebook import profiles.
 ### Changed
