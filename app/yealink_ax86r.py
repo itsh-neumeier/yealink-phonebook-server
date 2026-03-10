@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import random
 import time
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit, urlunsplit
 
 import requests
 
@@ -25,11 +25,7 @@ class YealinkAX86RClient:
         self.session = requests.Session()
 
     def fetch_local_contacts(self) -> list[dict[str, str | None]]:
-        self._login()
-        payload = self._request_json(
-            "GET",
-            self._endpoint("api/contacts/localcontacts?group=0&page=1&count=3000&p=ContactsLocal"),
-        )
+        payload = self._fetch_contacts_with_fallback()
         raw_list = payload.get("data", {}).get("list", [])
         contacts: list[dict[str, str | None]] = []
         for raw in raw_list:
@@ -46,6 +42,25 @@ class YealinkAX86RClient:
                 }
             )
         return [c for c in contacts if c["name"] and any([c["office"], c["mobile"], c["other"]])]
+
+    def _fetch_contacts_with_fallback(self) -> dict:
+        try:
+            self._login()
+            return self._request_json(
+                "GET",
+                self._endpoint("api/contacts/localcontacts?group=0&page=1&count=3000&p=ContactsLocal"),
+            )
+        except requests.exceptions.RequestException:
+            fallback = _https_fallback_url(self.base_url)
+            if not fallback or fallback == self.base_url:
+                raise
+            self.base_url = fallback
+            self.session = requests.Session()
+            self._login()
+            return self._request_json(
+                "GET",
+                self._endpoint("api/contacts/localcontacts?group=0&page=1&count=3000&p=ContactsLocal"),
+            )
 
     def _login(self) -> None:
         login_info = self._request_json(
@@ -115,3 +130,15 @@ def _rsa_encrypt_pkcs1_v15_hex(plaintext: str, n_hex: str, e_hex: str) -> str:
     c = pow(m, e, n)
     encrypted = c.to_bytes(k, byteorder="big")
     return encrypted.hex()
+
+
+def _https_fallback_url(base_url: str) -> str | None:
+    parts = urlsplit(base_url)
+    if parts.scheme.lower() != "http":
+        return None
+    netloc = parts.netloc
+    if ":" in netloc:
+        host, _, port = netloc.rpartition(":")
+        if port == "80":
+            netloc = f"{host}:443"
+    return urlunsplit(("https", netloc, parts.path, parts.query, parts.fragment))
