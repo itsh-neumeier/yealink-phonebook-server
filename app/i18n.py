@@ -110,7 +110,7 @@ TRANSLATIONS = {
         "error_403_message": "You do not have permission to access this resource.",
         "error_500_message": "An unexpected error occurred. Please try again later.",
         "back_to_home": "Back to home",
-        "sync_profiles": "Device Sync",
+        "sync_profiles": "Device Sync (Phonebook to Local)",
         "sync_profile_create": "Create Device Link",
         "sync_profile_required": "Please fill all required sync fields.",
         "sync_profile_created": "Device link created.",
@@ -122,6 +122,8 @@ TRANSLATIONS = {
         "sync_run_now": "Run now",
         "sync_verify_tls": "Verify TLS certificate",
         "sync_keep_password_hint": "Keep password",
+        "ringtone": "Ringtone",
+        "photo": "Photo",
     },
     "de": {
         "app_name": "YeaBook",
@@ -228,7 +230,7 @@ TRANSLATIONS = {
         "error_403_message": "Du hast keine Berechtigung fuer diese Ressource.",
         "error_500_message": "Ein unerwarteter Fehler ist aufgetreten. Bitte spaeter erneut versuchen.",
         "back_to_home": "Zur Startseite",
-        "sync_profiles": "Geräte-Sync",
+        "sync_profiles": "Geräte-Sync (Telefonbuch als Lokal übertragen)",
         "sync_profile_create": "Geräte-Verknüpfung erstellen",
         "sync_profile_required": "Bitte alle erforderlichen Sync-Felder ausfüllen.",
         "sync_profile_created": "Geräte-Verknüpfung erstellt.",
@@ -240,6 +242,8 @@ TRANSLATIONS = {
         "sync_run_now": "Jetzt ausführen",
         "sync_verify_tls": "TLS-Zertifikat prüfen",
         "sync_keep_password_hint": "Passwort beibehalten",
+        "ringtone": "Klingelton",
+        "photo": "Foto",
     },
 }
 

@@ -35,12 +35,16 @@ from .models import (
 )
 from .sync_service import create_sync_profile, run_profile_sync, update_sync_profile
 from .services import (
+    RINGTONE_OPTIONS,
+    YEALINK_STANDARD_PHOTO_OPTIONS,
     export_phonebook_csv,
     export_phonebook_xml,
     import_phonebook_csv,
     import_phonebook_xml,
     render_directory_xml,
     render_menu_xml,
+    sanitize_photo,
+    sanitize_ringtone,
     slugify,
 )
 
@@ -483,6 +487,8 @@ def view_phonebook(phonebook_id: int):
         grouped_entries=_group_entries(entries) if category == "business" else [],
         provisioning_url=provisioning_url,
         provisioning_url_with_auth=provisioning_url_with_auth,
+        ringtone_options=RINGTONE_OPTIONS,
+        photo_options=YEALINK_STANDARD_PHOTO_OPTIONS,
     )
 
 
@@ -496,6 +502,8 @@ def add_entry(phonebook_id: int):
     mobile = (request.form.get("mobile") or "").strip() or None
     other = (request.form.get("other") or "").strip() or None
     line = (request.form.get("line") or "").strip() or None
+    ring = sanitize_ringtone((request.form.get("ring") or "").strip() or None)
+    photo = sanitize_photo((request.form.get("photo") or "").strip() or None)
     group = (request.form.get("group") or "").strip() or None
     if not _is_business_phonebook(phonebook):
         group = None
@@ -512,6 +520,8 @@ def add_entry(phonebook_id: int):
             mobile=mobile,
             other=other,
             line=line,
+            ring=ring,
+            photo=photo,
             group=group,
         )
     )
@@ -533,6 +543,8 @@ def edit_entry(entry_id: int):
     mobile = (request.form.get("mobile") or "").strip() or None
     other = (request.form.get("other") or "").strip() or None
     line = (request.form.get("line") or "").strip() or None
+    ring = sanitize_ringtone((request.form.get("ring") or "").strip() or None)
+    photo = sanitize_photo((request.form.get("photo") or "").strip() or None)
     group = (request.form.get("group") or "").strip() or None
     if not _is_business_phonebook(phonebook):
         group = None
@@ -546,6 +558,8 @@ def edit_entry(entry_id: int):
     entry.mobile = mobile
     entry.other = other
     entry.line = line
+    entry.ring = ring
+    entry.photo = photo
     entry.group = group
     db.session.commit()
     export_phonebook_xml(phonebook, current_app.config["EXPORT_DIR"])

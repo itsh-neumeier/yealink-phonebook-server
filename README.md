@@ -83,7 +83,8 @@ Additional credentials are managed in the Access List admin page in the header.
 
 Behavior:
 - Import replaces all existing entries in the linked local phonebook on each run.
-- Contact photos/ringtones from local AX86R records are ignored and removed from YeaBook import state.
+- Ringtones are synchronized from AX86R local contacts.
+- Photos are synchronized only when they match YeaBook's allowed Yealink standard photo set.
 
 ## Bind Mount Permissions
 If you use a host path (`./data:/data` or `/docker-volumes/...:/data`), the mounted folder must be writable by the container user.

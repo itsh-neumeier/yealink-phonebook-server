@@ -38,6 +38,8 @@ class YealinkAX86RClient:
                     "mobile": _clean(raw.get("mobile_number")),
                     "other": _clean(raw.get("other_number")),
                     "line": _clean(raw.get("line")),
+                    "ring": _clean(raw.get("ring")),
+                    "photo": _clean(raw.get("photo")),
                     "group": _clean(raw.get("group")),
                 }
             )
@@ -68,6 +70,8 @@ class YealinkAX86RClient:
             self._endpoint("api/common/info?p=Login"),
         )
         data = login_info.get("data", {})
+        if not isinstance(data, dict):
+            data = {}
         n_hex = data.get("wui.common.rsaN")
         e_hex = data.get("wui.common.rsaE")
         encrypted = self.password

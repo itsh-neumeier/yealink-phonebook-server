@@ -6,7 +6,7 @@ from flask import current_app
 
 from .models import ContactEntry, Phonebook, SyncProfile, db
 from .secrets import decrypt_secret, encrypt_secret
-from .services import export_phonebook_xml
+from .services import export_phonebook_xml, sanitize_photo, sanitize_ringtone
 from .yealink_ax86r import YealinkAX86RClient
 
 
@@ -138,6 +138,8 @@ def _replace_phonebook_entries(phonebook: Phonebook, contacts: list[dict[str, st
                 mobile=mobile,
                 other=other,
                 line=item.get("line"),
+                ring=sanitize_ringtone(item.get("ring")),
+                photo=sanitize_photo(item.get("photo")),
                 group=group,
             )
         )

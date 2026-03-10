@@ -7,6 +7,7 @@ services:
       - "8080:8080"
     environment:
       SECRET_KEY: "change-me"
+      DATABASE_URL: "sqlite:////data/phonebooks.db"
       BASE_HTTP_URL: "https://phonebook.neumeier.cloud"
       ACCESS_DEFAULT_USERNAME: "yeabook_demo_u82"
       ACCESS_DEFAULT_PASSWORD: "YbDemo!9K2xP4"

@@ -11,6 +11,12 @@
   </div>
 </div>
 
+<datalist id="ringtoneOptions">
+  {% for tone in ringtone_options if tone %}
+    <option value="{{ tone }}"></option>
+  {% endfor %}
+</datalist>
+
 <div class="row g-4">
   <div class="col-xl-4">
     <div class="card shadow-sm mb-4">
@@ -73,6 +79,14 @@
           <div class="col-12"><input class="form-control" name="mobile" placeholder="{{ tr('mobile') }}"></div>
           <div class="col-12"><input class="form-control" name="other" placeholder="{{ tr('other') }}"></div>
           <div class="col-12"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
+          <div class="col-12"><input class="form-control" list="ringtoneOptions" name="ring" placeholder="{{ tr('ringtone') }}"></div>
+          <div class="col-12">
+            <select class="form-select" name="photo">
+              {% for photo_value, photo_label in photo_options.items() %}
+                <option value="{{ photo_value }}">{{ photo_label }}</option>
+              {% endfor %}
+            </select>
+          </div>
           {% if category == 'business' %}
           <div class="col-12"><input class="form-control" name="group" placeholder="{{ tr('department') }}"></div>
           {% endif %}
@@ -94,6 +108,8 @@
                 <th>{{ tr('office') }}</th>
                 <th>{{ tr('mobile') }}</th>
                 <th>{{ tr('other') }}</th>
+                <th>{{ tr('ringtone') }}</th>
+                <th>{{ tr('photo') }}</th>
                 {% if category == 'business' %}<th>{{ tr('department') }}</th>{% endif %}
                 <th></th>
               </tr>
@@ -102,13 +118,15 @@
               {% if entries %}
                 {% if category == 'business' %}
                   {% for department, dep_entries in grouped_entries %}
-                    <tr class="group-row"><td colspan="6"><strong>{{ department }}</strong></td></tr>
+                    <tr class="group-row"><td colspan="8"><strong>{{ department }}</strong></td></tr>
                     {% for entry in dep_entries %}
                       <tr>
                         <td>{{ entry.name }}</td>
                         <td>{{ entry.office or '' }}</td>
                         <td>{{ entry.mobile or '' }}</td>
                         <td>{{ entry.other or '' }}</td>
+                        <td>{{ entry.ring or '' }}</td>
+                        <td>{{ photo_options.get(entry.photo or '', '-') }}</td>
                         <td>{{ entry.group or '' }}</td>
                         <td class="text-end">
                           <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-{{ entry.id }}">{{ tr('edit') }}</button>
@@ -118,13 +136,21 @@
                         </td>
                       </tr>
                       <tr class="collapse" id="edit-{{ entry.id }}">
-                        <td colspan="6">
+                        <td colspan="8">
                           <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2">
                             <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ entry.name }}" required></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="office" value="{{ entry.office or '' }}" placeholder="{{ tr('office') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
+                            <div class="col-md-4"><input class="form-control form-control-sm" list="ringtoneOptions" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ringtone') }}"></div>
+                            <div class="col-md-4">
+                              <select class="form-select form-select-sm" name="photo">
+                                {% for photo_value, photo_label in photo_options.items() %}
+                                  <option value="{{ photo_value }}" {% if (entry.photo or '') == photo_value %}selected{% endif %}>{{ photo_label }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
                             <div class="col-md-8"><input class="form-control form-control-sm" name="group" value="{{ entry.group or '' }}" placeholder="{{ tr('department') }}"></div>
                             <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                           </form>
@@ -139,6 +165,8 @@
                       <td>{{ entry.office or '' }}</td>
                       <td>{{ entry.mobile or '' }}</td>
                       <td>{{ entry.other or '' }}</td>
+                      <td>{{ entry.ring or '' }}</td>
+                      <td>{{ photo_options.get(entry.photo or '', '-') }}</td>
                       <td class="text-end">
                         <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#edit-{{ entry.id }}">{{ tr('edit') }}</button>
                         <form method="post" action="{{ url_for('web.delete_entry', entry_id=entry.id) }}" class="d-inline">
@@ -147,13 +175,21 @@
                       </td>
                     </tr>
                     <tr class="collapse" id="edit-{{ entry.id }}">
-                      <td colspan="5">
+                      <td colspan="7">
                         <form method="post" action="{{ url_for('web.edit_entry', entry_id=entry.id) }}" class="row g-2">
                           <div class="col-md-4"><input class="form-control form-control-sm" name="name" value="{{ entry.name }}" required></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="office" value="{{ entry.office or '' }}" placeholder="{{ tr('office') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
+                          <div class="col-md-4"><input class="form-control form-control-sm" list="ringtoneOptions" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ringtone') }}"></div>
+                          <div class="col-md-4">
+                            <select class="form-select form-select-sm" name="photo">
+                              {% for photo_value, photo_label in photo_options.items() %}
+                                <option value="{{ photo_value }}" {% if (entry.photo or '') == photo_value %}selected{% endif %}>{{ photo_label }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
                           <div class="col-md-4 text-end"><button class="btn btn-primary btn-sm" type="submit">{{ tr('save') }}</button></div>
                         </form>
                       </td>
@@ -161,7 +197,7 @@
                   {% endfor %}
                 {% endif %}
               {% else %}
-                <tr><td colspan="6" class="text-muted">{{ tr('no_entries') }}</td></tr>
+                <tr><td colspan="8" class="text-muted">{{ tr('no_entries') }}</td></tr>
               {% endif %}
             </tbody>
           </table>

@@ -5,7 +5,7 @@ from sqlalchemy import text
 from .models import db
 
 
-CURRENT_SCHEMA_VERSION = 5
+CURRENT_SCHEMA_VERSION = 6
 
 
 def migrate_database() -> None:
@@ -29,6 +29,8 @@ def migrate_database() -> None:
             _migrate_v3_to_v4()
         elif version == 4:
             _migrate_v4_to_v5()
+        elif version == 5:
+            _migrate_v5_to_v6()
         version += 1
 
 
@@ -143,6 +145,15 @@ def _migrate_v4_to_v5() -> None:
         _write_schema_version(conn, 5)
 
 
+def _migrate_v5_to_v6() -> None:
+    with db.engine.begin() as conn:
+        if not _has_column(conn, "contact_entries", "ring"):
+            conn.execute(text("ALTER TABLE contact_entries ADD COLUMN ring VARCHAR(80)"))
+        if not _has_column(conn, "contact_entries", "photo"):
+            conn.execute(text("ALTER TABLE contact_entries ADD COLUMN photo VARCHAR(120)"))
+        _write_schema_version(conn, 6)
+
+
 def _grant_existing_credentials_all_phonebooks(conn) -> None:
     row = conn.execute(text("SELECT COUNT(*) FROM access_credential_phonebooks")).fetchone()
     permission_count = int(row[0]) if row else 0
@@ -159,3 +170,8 @@ def _grant_existing_credentials_all_phonebooks(conn) -> None:
             """
         )
     )
+
+
+def _has_column(conn, table_name: str, column_name: str) -> bool:
+    rows = conn.execute(text(f"PRAGMA table_info({table_name})")).fetchall()
+    return any(str(row[1]) == column_name for row in rows)

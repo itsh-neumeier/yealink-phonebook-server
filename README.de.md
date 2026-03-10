@@ -83,7 +83,8 @@ Weitere Zugangsdaten werden in der Access-Liste im Header verwaltet.
 
 Verhalten:
 - Beim Import werden bestehende Einträge im verknüpften lokalen Telefonbuch immer komplett ersetzt.
-- Kontaktfotos/Klingeltöne aus AX86R Local Contacts werden im YeaBook-Importzustand ignoriert und entfernt.
+- Klingeltöne werden aus AX86R Local Contacts synchronisiert.
+- Fotos werden nur synchronisiert, wenn sie zum erlaubten Yealink-Standardfoto-Set in YeaBook gehören.
 
 ## Bind-Mount Berechtigungen
 Wenn ein Host-Pfad gemountet wird (`./data:/data` oder `/docker-volumes/...:/data`), muss der Ordner fuer den Container-Benutzer beschreibbar sein.

@@ -7,6 +7,13 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ### Changed
 - Auto-update CHANGELOG.
 
+## [0.3.2] - 2026-03-10
+### Added
+- Re-introduce contact ringtone and photo fields in UI/import/export.
+- Restrict photo selection to Yealink standard photo presets (no custom uploads).
+### Fixed
+- Store SQLite database on `/data/phonebooks.db` by default for persistent volume upgrades.
+
 ## [0.3.1] - 2026-03-10
 ### Fixed
 - Add AX86R sync HTTP->HTTPS fallback when a device rejects port 80 connections.

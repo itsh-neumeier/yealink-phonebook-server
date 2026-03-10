@@ -65,6 +65,8 @@ class ContactEntry(db.Model):
     mobile = db.Column(db.String(40), nullable=True)
     other = db.Column(db.String(40), nullable=True)
     line = db.Column(db.String(40), nullable=True)
+    ring = db.Column(db.String(80), nullable=True)
+    photo = db.Column(db.String(120), nullable=True)
     group = db.Column(db.String(120), nullable=True)
 
     __table_args__ = (

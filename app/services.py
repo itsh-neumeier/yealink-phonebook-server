@@ -7,7 +7,27 @@ from pathlib import Path
 from .models import ContactEntry, Phonebook, db
 
 
-CSV_COLUMNS = ["name", "office", "mobile", "other", "line", "group"]
+CSV_COLUMNS = ["name", "office", "mobile", "other", "line", "ring", "photo", "group"]
+RINGTONE_OPTIONS = [
+    "",
+    "Ring1.wav",
+    "Ring2.wav",
+    "Ring3.wav",
+    "Ring4.wav",
+    "Ring5.wav",
+    "Ring6.wav",
+    "Ring7.wav",
+    "Ring8.wav",
+    "Silent.wav",
+    "Splash.wav",
+]
+YEALINK_STANDARD_PHOTO_OPTIONS = {
+    "": "None",
+    "Default:default_contact_image.png": "Default",
+    "System:icon_family_b.png": "Family",
+    "System:icon_friend_b.png": "Friend",
+    "System:icon_blacklist_b.png": "Blacklist",
+}
 
 
 def slugify(value: str) -> str:
@@ -43,6 +63,15 @@ def export_phonebook_xml(phonebook: Phonebook, export_dir: str) -> Path:
             if number:
                 telephone_node = ET.SubElement(item, "Telephone")
                 telephone_node.text = number
+        if entry.line:
+            line_node = ET.SubElement(item, "Line")
+            line_node.text = entry.line
+        if entry.ring:
+            ring_node = ET.SubElement(item, "Ring")
+            ring_node.text = entry.ring
+        if entry.photo:
+            photo_node = ET.SubElement(item, "Photo")
+            photo_node.text = entry.photo
 
         if is_business and entry.group:
             group_node = ET.SubElement(item, "Group")
@@ -70,6 +99,15 @@ def render_directory_xml(title_text: str, prompt_text: str, entries: list[Contac
             if number:
                 telephone_node = ET.SubElement(item, "Telephone")
                 telephone_node.text = number
+        if entry.line:
+            line_node = ET.SubElement(item, "Line")
+            line_node.text = entry.line
+        if entry.ring:
+            ring_node = ET.SubElement(item, "Ring")
+            ring_node.text = entry.ring
+        if entry.photo:
+            photo_node = ET.SubElement(item, "Photo")
+            photo_node.text = entry.photo
         if include_group and entry.group:
             group_node = ET.SubElement(item, "Group")
             group_node.text = entry.group
@@ -124,6 +162,9 @@ def import_phonebook_xml(phonebook: Phonebook, xml_path: Path, replace_existing:
         office = numbers[0] if len(numbers) > 0 else None
         mobile = numbers[1] if len(numbers) > 1 else None
         other = numbers[2] if len(numbers) > 2 else None
+        line = (item.findtext("Line") or "").strip() or None
+        ring = sanitize_ringtone((item.findtext("Ring") or "").strip() or None)
+        photo = sanitize_photo((item.findtext("Photo") or "").strip() or None)
         group = (item.findtext("Group") or "").strip() or None
         if not is_business:
             group = None
@@ -135,6 +176,9 @@ def import_phonebook_xml(phonebook: Phonebook, xml_path: Path, replace_existing:
                 office=office,
                 mobile=mobile,
                 other=other,
+                line=line,
+                ring=ring,
+                photo=photo,
                 group=group,
             )
         )
@@ -156,6 +200,8 @@ def export_phonebook_csv(phonebook: Phonebook, export_path: Path) -> Path:
                     "mobile": entry.mobile or "",
                     "other": entry.other or "",
                     "line": entry.line or "",
+                    "ring": entry.ring or "",
+                    "photo": entry.photo or "",
                     "group": entry.group or "",
                 }
             )
@@ -172,6 +218,8 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
             mobile = (row.get("mobile") or "").strip() or None
             other = (row.get("other") or "").strip() or None
             line = (row.get("line") or "").strip() or None
+            ring = sanitize_ringtone((row.get("ring") or "").strip() or None)
+            photo = sanitize_photo((row.get("photo") or "").strip() or None)
             group = (row.get("group") or "").strip() or None
 
             if not name or not any([office, mobile, other]):
@@ -185,6 +233,8 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
                     mobile=mobile,
                     other=other,
                     line=line,
+                    ring=ring,
+                    photo=photo,
                     group=group,
                 )
             )
@@ -192,3 +242,21 @@ def import_phonebook_csv(phonebook: Phonebook, csv_path: Path) -> int:
 
     db.session.commit()
     return inserted
+
+
+def sanitize_ringtone(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    return text
+
+
+def sanitize_photo(value: str | None) -> str | None:
+    if not value:
+        return None
+    text = value.strip()
+    if text in YEALINK_STANDARD_PHOTO_OPTIONS:
+        return text or None
+    return None

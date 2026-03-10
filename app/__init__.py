@@ -12,7 +12,7 @@ from .views import web
 def create_app(test_config: dict | None = None) -> Flask:
     app = Flask(__name__, instance_relative_config=True)
 
-    sqlite_path = Path(app.instance_path, "phonebooks.db")
+    sqlite_path = Path("/data", "phonebooks.db")
     default_db = f"sqlite:///{sqlite_path.as_posix()}"
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY", "change-me"),
