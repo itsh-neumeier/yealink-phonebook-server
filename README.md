@@ -64,6 +64,17 @@ WebUI:
 - Default admin user: `admin`
 - Default admin password: `change-me-now`
 
+## Container Admin Commands
+List WebUI users:
+```bash
+docker exec yeabook python -m app.admin_cli list-users
+```
+
+Reset a WebUI password:
+```bash
+docker exec yeabook python -m app.admin_cli reset-password admin "new-strong-password"
+```
+
 ## Yealink Provisioning URLs
 Per phonebook:
 - HTTP: `http://<host>:8080/<slug>.xml`

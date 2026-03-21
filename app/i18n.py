@@ -124,6 +124,7 @@ TRANSLATIONS = {
         "sync_keep_password_hint": "Keep password",
         "ringtone": "Ringtone",
         "photo": "Photo",
+        "version": "Version",
     },
     "de": {
         "app_name": "YeaBook",
@@ -244,6 +245,7 @@ TRANSLATIONS = {
         "sync_keep_password_hint": "Passwort beibehalten",
         "ringtone": "Klingelton",
         "photo": "Foto",
+        "version": "Version",
     },
 }
 

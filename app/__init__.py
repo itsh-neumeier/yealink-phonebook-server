@@ -21,6 +21,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         EXPORT_DIR=os.environ.get("EXPORT_DIR", "/data/phonebooks"),
         BASE_HTTP_URL=os.environ.get("BASE_HTTP_URL", "http://localhost:8080"),
+        APP_VERSION=os.environ.get("APP_VERSION", "dev"),
         ACCESS_DEFAULT_USERNAME=os.environ.get("ACCESS_DEFAULT_USERNAME", "yeabook_client"),
         ACCESS_DEFAULT_PASSWORD=os.environ.get("ACCESS_DEFAULT_PASSWORD", "change-me-now"),
         ADMIN_USERNAME=os.environ.get("ADMIN_USERNAME", "admin"),
