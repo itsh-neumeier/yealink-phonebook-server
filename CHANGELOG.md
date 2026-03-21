@@ -11,6 +11,10 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 
+## [0.3.5] - 2026-03-21
+### Fixed
+- Make admin CLI tests use the workflow test database/export directory so CI passes on Linux runners.
+
 ## [0.3.4] - 2026-03-21
 ### Added
 - Add user admin cli and footer version.
