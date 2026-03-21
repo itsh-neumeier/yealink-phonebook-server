@@ -11,12 +11,6 @@
   </div>
 </div>
 
-<datalist id="ringtoneOptions">
-  {% for tone in ringtone_options if tone %}
-    <option value="{{ tone }}"></option>
-  {% endfor %}
-</datalist>
-
 <div class="row g-4">
   <div class="col-xl-4">
     <div class="card shadow-sm mb-4">
@@ -79,7 +73,13 @@
           <div class="col-12"><input class="form-control" name="mobile" placeholder="{{ tr('mobile') }}"></div>
           <div class="col-12"><input class="form-control" name="other" placeholder="{{ tr('other') }}"></div>
           <div class="col-12"><input class="form-control" name="line" placeholder="{{ tr('line') }}"></div>
-          <div class="col-12"><input class="form-control" list="ringtoneOptions" name="ring" placeholder="{{ tr('ringtone') }}"></div>
+          <div class="col-12">
+            <select class="form-select" name="ring">
+              {% for tone in ringtone_options %}
+                <option value="{{ tone }}">{{ tone if tone else '-' }}</option>
+              {% endfor %}
+            </select>
+          </div>
           <div class="col-12">
             <select class="form-select photo-select" name="photo" data-preview-id="photo-preview-create">
               {% for photo_value, photo_label in photo_options.items() %}
@@ -153,7 +153,13 @@
                             <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                             <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
-                            <div class="col-md-4"><input class="form-control form-control-sm" list="ringtoneOptions" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ringtone') }}"></div>
+                            <div class="col-md-4">
+                              <select class="form-select form-select-sm" name="ring">
+                                {% for tone in ringtone_options %}
+                                  <option value="{{ tone }}" {% if (entry.ring or '') == tone %}selected{% endif %}>{{ tone if tone else '-' }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
                             <div class="col-md-4">
                               <select class="form-select form-select-sm photo-select" name="photo" data-preview-id="photo-preview-edit-{{ entry.id }}">
                                 {% for photo_value, photo_label in photo_options.items() %}
@@ -203,7 +209,13 @@
                           <div class="col-md-4"><input class="form-control form-control-sm" name="mobile" value="{{ entry.mobile or '' }}" placeholder="{{ tr('mobile') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="other" value="{{ entry.other or '' }}" placeholder="{{ tr('other') }}"></div>
                           <div class="col-md-4"><input class="form-control form-control-sm" name="line" value="{{ entry.line or '' }}" placeholder="{{ tr('line') }}"></div>
-                          <div class="col-md-4"><input class="form-control form-control-sm" list="ringtoneOptions" name="ring" value="{{ entry.ring or '' }}" placeholder="{{ tr('ringtone') }}"></div>
+                          <div class="col-md-4">
+                            <select class="form-select form-select-sm" name="ring">
+                              {% for tone in ringtone_options %}
+                                <option value="{{ tone }}" {% if (entry.ring or '') == tone %}selected{% endif %}>{{ tone if tone else '-' }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
                           <div class="col-md-4">
                             <select class="form-select form-select-sm photo-select" name="photo" data-preview-id="photo-preview-edit-{{ entry.id }}">
                               {% for photo_value, photo_label in photo_options.items() %}

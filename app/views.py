@@ -65,6 +65,7 @@ def inject_i18n():
         "tr": lambda key, **kwargs: translate(g.lang, key, **kwargs),
         "lang": g.lang,
         "supported_languages": SUPPORTED_LANGUAGES,
+        "app_version": current_app.config.get("APP_VERSION", "dev"),
     }
 
 
