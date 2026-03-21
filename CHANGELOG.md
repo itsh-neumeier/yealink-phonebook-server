@@ -4,15 +4,15 @@ All notable changes to this project are documented in this file.
 The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 
 ## [Unreleased]
+### Added
+- Add user admin cli and footer version.
 ### Changed
+- Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
 
 ## [0.3.4] - 2026-03-21
 ### Added
-- Add container admin CLI for listing WebUI users and resetting WebUI passwords.
-- Show application version in the footer via `APP_VERSION`.
-### Changed
-- Use dropdown selection for ringtones in contact forms.
+- Add user admin cli and footer version.
 
 ## [0.3.3] - 2026-03-10
 ### Changed
