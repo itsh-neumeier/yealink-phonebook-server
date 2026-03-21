@@ -4,6 +4,7 @@ from app.models import User
 
 def test_admin_cli_list_users(app, capsys, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", app.config["SQLALCHEMY_DATABASE_URI"])
+    monkeypatch.setenv("EXPORT_DIR", app.config["EXPORT_DIR"])
     exit_code = main(["list-users"])
 
     assert exit_code == 0
@@ -14,6 +15,7 @@ def test_admin_cli_list_users(app, capsys, monkeypatch):
 
 def test_admin_cli_reset_password(app, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", app.config["SQLALCHEMY_DATABASE_URI"])
+    monkeypatch.setenv("EXPORT_DIR", app.config["EXPORT_DIR"])
     with app.app_context():
         user = User.query.filter_by(username="admin").first()
         assert user is not None
@@ -30,6 +32,7 @@ def test_admin_cli_reset_password(app, monkeypatch):
 
 def test_admin_cli_reset_password_missing_user(app, capsys, monkeypatch):
     monkeypatch.setenv("DATABASE_URL", app.config["SQLALCHEMY_DATABASE_URI"])
+    monkeypatch.setenv("EXPORT_DIR", app.config["EXPORT_DIR"])
     exit_code = main(["reset-password", "missing-user", "new-secret-123"])
 
     assert exit_code == 1
