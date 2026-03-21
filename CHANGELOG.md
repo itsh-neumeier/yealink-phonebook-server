@@ -7,6 +7,7 @@ The format follows Keep a Changelog and Semantic Versioning 2.0.0.
 ### Changed
 - Auto-update CHANGELOG.
 - Auto-update CHANGELOG.
+- Auto-update CHANGELOG.
 ### Fixed
 - Align admin cli tests with workflow env.
 
